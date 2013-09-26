@@ -28,6 +28,10 @@ function Character(){
 	var speedX = 0;
 	var speedY = 0;
 
+	// other players only, interpolating gradually to desired pos
+	var interpolatePosX = posX;
+	var interpolatePosY = posY;
+
 	var inAir = false;
 
 	// client only - initialise all objects for render
@@ -84,6 +88,7 @@ function Character(){
 		horizontalMovementUpdate();
 		verticalMovementUpdate();
 		move(speedX, speedY);
+		if(!isMine) interpolate();
 	}
 
 	// move and check for collision
@@ -310,11 +315,63 @@ function Character(){
 		return posY;
 	}
 
-	this.interpolateTo = function(x, y){
-		moveBlindlyToX(x);
-		moveBlindlyToY(y);
+	var interpolateValidity = 0;
+	var interpolate = function(){
+
+		interpolateValidity--;
+		if(interpolateValidity > 0){
+
+			// for horizontal component
+			var deltaX = interpolatePosX - posX;
+
+			if(deltaX != 0){
+				if(deltaX > CHARACTERMOVEMENTSPEED){						// very far right
+					if(deltaX > CHARACTERMOVEMENTSPEED*interpolateValidity)	// too far away, fly over as smoothly as possible
+						moveBlindlyX(deltaX/interpolateValidity);
+					else													// feign walk right
+						moveBlindlyX(CHARACTERMOVEMENTSPEED);
+				}
+				else if(deltaX < -CHARACTERMOVEMENTSPEED){					 // very far left
+					if(deltaX < -CHARACTERMOVEMENTSPEED*interpolateValidity) // too far away, fly over as smoothly as possible
+						moveBlindlyX(deltaX/interpolateValidity);
+					else													 // feign walk left
+						moveBlindlyX(-CHARACTERMOVEMENTSPEED);
+				}
+			}
+
+			// for vertical component
+			var deltaY = interpolatePosY - posY;
+
+			if(deltaY != 0){
+				if(deltaY > 60 || deltaY < -60)	// interpolate only if too far away (approx 1 tile away)
+					moveBlindlyY(deltaY);
+			}
+
+			if(!ISSERVER){
+				setAnimationBasedOnSpeed(deltaX);
+
+				if(!inAir && deltaX != 0){
+					if(deltaX > 0)
+						spriteMovieClip.scale.x = 2;
+					else
+						spriteMovieClip.scale.x = -2;
+				}
+			}
+		}
 	}
 
+	this.interpolateTo = function(x, y){
+
+		interpolatePosX = x;
+		interpolatePosY = y;
+		interpolateValidity = 10;
+
+
+		//moveBlindlyToX(x);
+		//moveBlindlyToY(y);
+	}
+
+	/*
 	// simply move to x pos, check should be done in move function
 	var moveBlindlyToX = function(newPosX){
 		var deltaX = newPosX - posX;
@@ -325,7 +382,7 @@ function Character(){
 	var moveBlindlyToY = function(newPosY){
 		var deltaY = newPosY - posY;
 		moveBlindlyY(deltaY);
-	}
+	}*/
 
 }
 
