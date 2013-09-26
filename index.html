@@ -1,0 +1,157 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Save Her!</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #FFFFFF;
+		}
+	</style>
+
+	<!-- from open source libraries -->
+	<script src="PIXI/jquery-1.8.3.min.js"></script>
+	<script src="PIXI/pixi.js"></script>
+	<script src="classes/keyboard.js"></script>
+	<script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+
+	<!-- custom scripts -->
+	<script src="classes/character.js"></script>
+	<script src="classes/characterFactory.js"></script>
+	<script src="classes/constants.js"></script>
+	<script src="classes/rectangle.js"></script>
+	<script src="classes/utility.js"></script>
+
+</head>
+<body>
+	<script>
+
+		var player;
+		var otherPlayer;
+		var mapRects = [];
+		var map = [[0,0,0,0,0,0,0,0,0,0,0,0,0],
+				   [0,0,0,0,0,0,0,0,0,0,0,0,0],
+				   [0,0,0,0,0,0,0,0,0,1,0,0,0],
+				   [0,0,1,1,0,0,0,0,0,1,0,0,0],
+				   [0,0,0,0,0,0,0,0,0,0,0,0,0],
+				   [0,0,0,0,0,0,0,0,0,0,0,0,0],
+				   [1,0,0,0,0,1,1,0,0,0,0,0,0],
+				   [1,1,1,1,1,1,1,1,1,1,1,1,1]];
+
+		function Main(){
+
+			// load all assets
+			var assetsToLoader = [ "PIXI/SpriteSheet.json"];
+			loader = new PIXI.AssetLoader(assetsToLoader);
+			loader.onComplete = start;
+			loader.load();
+
+			// set the stage and renderer
+			var stage = new PIXI.Stage(0x000000);
+			renderer = PIXI.autoDetectRenderer(800, 600);
+			document.body.appendChild(renderer.view);
+
+			var that = this;
+
+			// complete loading of assets
+			function start()
+			{
+				// start animating
+				requestAnimFrame( animate );
+
+				// start updating
+				setInterval(update, FRAMEDURATION);
+
+				var moonTexture = PIXI.Texture.fromImage("moon.png");
+				var moon = new PIXI.Sprite(moonTexture);
+				moon.position.x = 300;
+				moon.position.y = 0;
+				moon.width = moon.width*2;
+				moon.height = moon.height*2;
+				stage.addChild(moon);
+
+				for(var i=0; i<2; i++){
+					var graveTexture = PIXI.Texture.fromImage("grave.png");
+					var grave = new PIXI.Sprite(graveTexture);
+					grave.position.x = i*graveTexture.width*2;
+					grave.position.y = 0;
+					grave.width = grave.width*2;
+					grave.height = grave.height*2;
+					stage.addChild(grave);
+				}
+
+				var tileTexture = PIXI.Texture.fromImage("tile.png");
+				for(var i=0; i<map.length; i++){
+
+					var prev = 0;
+					var prevRect;
+
+					for(var j=0; j<map[i].length; j++){
+						if(map[i][j] == 1){
+							
+							var tile = new PIXI.Sprite(tileTexture);
+							tile.position.x = j*TILEWIDTH;
+							tile.position.y = i*TILEHEIGHT;
+							tile.width = TILEWIDTH+1;
+							tile.height = TILEHEIGHT;
+							stage.addChild(tile);
+
+							if(prev == 1)
+								prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
+							else{
+								prevRect = new Rectangle(stage, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+								mapRects.push(prevRect);
+							}
+						}
+						prev = map[i][j];
+					}
+
+				}
+
+				var characterFac = new CharacterFactory();
+				player = characterFac.createCharacter(stage, CHARACTERTYPE.PUMPKIN, true);
+				otherPlayer = characterFac.createCharacter(stage, CHARACTERTYPE.PUMPKIN, false);
+
+				socket = new SockJS("http://localhost:4000/game");	// set as global variable in constants.js
+				socket.onopen = function() {
+					socketReady = true;
+				}
+				socket.onmessage = function(e){
+					console.log("Got something from Server : " + e.data);
+
+	                var message = JSON.parse(e.data);
+	                switch (message.type) {
+	                case "pos":
+	                case "posForce":
+	                    otherPlayer.interpolateTo(message.x, message.y);
+	                    break;
+	                case "jump":
+	                	otherPlayer.jump();
+	                	break;
+	                case "speedX":
+	                	otherPlayer.setSpeedX(message.x);
+	                }
+				}
+			}
+			
+			// render loop
+			function animate() {
+			    requestAnimFrame( animate );
+			    renderer.render(stage);
+			}
+
+			// game loop
+			function update() {
+				player.update();
+				otherPlayer.update();
+			}
+
+		}
+
+		var application = new Main();
+
+	</script>
+
+	</body>
+</html>
