@@ -19,6 +19,8 @@
 	<!-- custom scripts -->
 	<script src="classes/character.js"></script>
 	<script src="classes/characterFactory.js"></script>
+	<script src="classes/bullet.js"></script>
+	<script src="classes/bulletManager.js"></script>
 	<script src="classes/constants.js"></script>
 	<script src="classes/rectangle.js"></script>
 	<script src="classes/utility.js"></script>
@@ -28,6 +30,7 @@
 	<script>
 
 		var player;
+		var myBulletManager;
 		var otherPlayer;
 		var mapRects = [];
 		var map = [[0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -112,7 +115,7 @@
 				var characterFac = new CharacterFactory();
 				player = characterFac.createCharacter(stage, CHARACTERTYPE.PUMPKIN, true);
 				otherPlayer = characterFac.createCharacter(stage, CHARACTERTYPE.PUMPKIN, false);
-
+				myBulletManager = new bulletManager(stage,player);
 				socket = new SockJS("http://localhost:4000/game");	// set as global variable in constants.js
 				socket.onopen = function() {
 					socketReady = true;
@@ -144,6 +147,7 @@
 			// game loop
 			function update() {
 				player.update();
+				myBulletManager.update();
 				otherPlayer.update();
 			}
 
