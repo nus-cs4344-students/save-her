@@ -12,8 +12,9 @@
 
 	<!-- from open source libraries -->
 	<script src="PIXI/jquery-1.8.3.min.js"></script>
-	<script src="PIXI/pixi.js"></script>
-	<script src="classes/keyboard.js"></script>
+	<script src="PIXI/pixi.js"></script>					<!--rendering library-->
+	<script src="classes/keyboard.js"></script>				<!--input detection library-->
+	<script src="classes/buffer-loader.js"></script>		<!--sound loading library-->
 	<script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
 
 	<!-- custom scripts -->
@@ -24,28 +25,27 @@
 	<script src="classes/constants.js"></script>
 	<script src="classes/rectangle.js"></script>
 	<script src="classes/utility.js"></script>
+	<script src="classes/soundManager.js"></script>
+	<script src="classes/gameGUIManager.js"></script>
 
 </head>
 <body>
 	<script>
 
-		var player;
-		var myBulletManager;
-		var otherPlayer;
-		var mapRects = [];
-		var map = [[0,0,0,0,0,0,0,0,0,0,0,0,0],
-				   [0,0,0,0,0,0,0,0,0,0,0,0,0],
-				   [0,0,0,0,0,0,0,0,0,1,0,0,0],
-				   [0,0,1,1,0,0,0,0,0,1,0,0,0],
-				   [0,0,0,0,0,0,0,0,0,0,0,0,0],
-				   [0,0,0,0,0,0,0,0,0,0,0,0,0],
-				   [1,0,0,0,0,1,1,0,0,0,0,0,0],
-				   [1,1,1,1,1,1,1,1,1,1,1,1,1]];
+		var ownCharacter;		// own player's character
+		var characters = [];	// other players' character
+
+		var myBulletManager;	// bullet manager
+		var mapRects = [];		// collision rectangles for map
 
 		function Main(){
 
-			// load all assets
-			var assetsToLoader = [ "PIXI/SpriteSheet.json"];
+			// initialise sounds and music
+		    initSounds();
+		    playSound(gameMusic, true);
+
+			// load all art assets
+			var assetsToLoader = [ "PIXI/SpriteSheet.json", "PIXI/SpriteSheet2.json", "PIXI/PixelFont.fnt"];
 			loader = new PIXI.AssetLoader(assetsToLoader);
 			loader.onComplete = start;
 			loader.load();
@@ -60,19 +60,30 @@
 			// complete loading of assets
 			function start()
 			{
+				// initialise background camera
+				var backGUI = new PIXI.DisplayObjectContainer();
+				stage.addChild(backGUI);
+
+				initGameGUI(stage);
+
+				// initialise game camera
+				var camera = new PIXI.DisplayObjectContainer();
+				stage.addChild(camera);
+
 				// start animating
 				requestAnimFrame( animate );
 
 				// start updating
 				setInterval(update, FRAMEDURATION);
 
+				// render backdrop
 				var moonTexture = PIXI.Texture.fromImage("moon.png");
 				var moon = new PIXI.Sprite(moonTexture);
 				moon.position.x = 300;
 				moon.position.y = 0;
 				moon.width = moon.width*2;
 				moon.height = moon.height*2;
-				stage.addChild(moon);
+				backGUI.addChild(moon);
 
 				for(var i=0; i<2; i++){
 					var graveTexture = PIXI.Texture.fromImage("grave.png");
@@ -81,9 +92,10 @@
 					grave.position.y = 0;
 					grave.width = grave.width*2;
 					grave.height = grave.height*2;
-					stage.addChild(grave);
+					backGUI.addChild(grave);
 				}
 
+				// generate map
 				var tileTexture = PIXI.Texture.fromImage("tile.png");
 				for(var i=0; i<map.length; i++){
 
@@ -98,12 +110,12 @@
 							tile.position.y = i*TILEHEIGHT;
 							tile.width = TILEWIDTH+1;
 							tile.height = TILEHEIGHT;
-							stage.addChild(tile);
+							camera.addChild(tile);
 
 							if(prev == 1)
 								prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
 							else{
-								prevRect = new Rectangle(stage, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+								prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
 								mapRects.push(prevRect);
 							}
 						}
@@ -112,29 +124,54 @@
 
 				}
 
+				// create OWN character
+				// @PRISCILLA - this is where your own character is created
 				var characterFac = new CharacterFactory();
-				player = characterFac.createCharacter(stage, CHARACTERTYPE.PUMPKIN, true);
-				otherPlayer = characterFac.createCharacter(stage, CHARACTERTYPE.PUMPKIN, false);
-				myBulletManager = new bulletManager(stage,player);
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
+				myBulletManager = new bulletManager(camera, ownCharacter);
+				
+				// set camera to player
+				camera.position.x = ownCharacter.getSprite().position.x + 200;
+				camera.position.y = ownCharacter.getSprite().position.y + 100;
+
+				// networking
 				socket = new SockJS("http://localhost:4000/game");	// set as global variable in constants.js
 				socket.onopen = function() {
 					socketReady = true;
 				}
+
+				// on receiving a message from server
 				socket.onmessage = function(e){
-					console.log("Got something from Server : " + e.data);
+					console.log("from Server : " + e.data);
 
 	                var message = JSON.parse(e.data);
+
 	                switch (message.type) {
-	                case "pos":
-	                case "posForce":
-	                    otherPlayer.interpolateTo(message.x, message.y);
-	                    break;
-	                case "jump":
-	                	otherPlayer.jump();
-	                	break;
-	                case "speedX":
-	                	otherPlayer.setSpeedX(message.x);
+
+	                	// @PRISCILLA - a message with newPlayer type is sent
+	                	// to clients to create the player in the game
+	                	// characterType indicates type of character
+	                	// playerID corresponds to the socket id of the player
+	                	case "newPlayer":
+                			characters[message.playerID] = characterFac.createCharacter(camera, message.characterType, false);
+                			addPlayerGUI(stage);
+                			break;
+
+                		// update position
+		                case "pos": case "posForce":
+		                    characters[message.playerID].interpolateTo(message.x, message.y);
+		                    break;
+
+		                // do a jump
+		                case "jump":
+		                	characters[message.playerID].jump();
+		                	break;
+
+		                // change velocity in horizontal component
+		                case "speedX":
+		                	characters[message.playerID].setSpeedX(message.x);
 	                }
+
 				}
 			}
 			
@@ -146,9 +183,23 @@
 
 			// game loop
 			function update() {
-				player.update();
-				myBulletManager.update();
-				otherPlayer.update();
+				
+				// update characters
+				if(ownCharacter != null){
+					// update character
+					ownCharacter.update();
+					
+					// update bullets
+					myBulletManager.update();
+
+					// update UI
+					gameGUIUpdate();
+				}
+
+				// update all other characters
+				var playerID;
+				for(playerID in characters)
+					characters[playerID].update();
 			}
 
 		}

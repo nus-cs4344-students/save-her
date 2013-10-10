@@ -2,6 +2,12 @@
 
 function Character(){
 
+	// statistics
+	this.maxHP = 100;
+	this.maxLives = 5;
+	this.HP = this.maxHP;
+	this.lives = this.maxLives;
+
 	// private attributes
 	var that = this;
 
@@ -15,11 +21,13 @@ function Character(){
 	var walkTextures;
 	var jumpTextures;
 	var dieTextures;
+	var hurtTextures;
 
 	var wallDetector;	// detect walls to block
 	var floorDetector;	// detect floors to land
 	var hoverDetector;	// detect if it is floating (must fall down)
-	var headDetector;
+	var headDetector;	// detect if head is colliding with a tile
+	var bodyDetector;	// detect if bullets hit
 
 	var posX = 100;
 	var posY = 100;
@@ -33,15 +41,18 @@ function Character(){
 	var interpolatePosY = posY;
 
 	var inAir = false;
+	var isDead = false;
+	var stopInput = false;
 
 	// client only - initialise all objects for render
-	this.init = function(stageArg, stopTexturesArg, walkTexturesArg, jumpTexturesArg, dieTexturesArg){
+	this.init = function(stageArg, stopTexturesArg, walkTexturesArg, jumpTexturesArg, dieTexturesArg, hurtTexturesArg){
 		if(!ISSERVER){
 			stage = stageArg;
 			stopTextures = stopTexturesArg;
 			walkTextures = walkTexturesArg;
 			jumpTextures = jumpTexturesArg;
 			dieTextures = dieTexturesArg;
+			hurtTextures = hurtTexturesArg;
 
 			spriteMovieClip = new PIXI.MovieClip(stopTextures);
 			spriteMovieClip.scale.x = spriteMovieClip.scale.y = 2;
@@ -60,6 +71,7 @@ function Character(){
 		floorDetector = new Rectangle(stage, posX-32+25, posY-32+8, 64-2*25, TILEHEIGHT-8);
 		hoverDetector = new Rectangle(stage, posX-32+25, posY+32, 64-2*25, 3);
 		headDetector = new Rectangle(stage, posX-32+25, posY-32+5, 64-2*25, 3);
+		bodyDetector = new Rectangle(stage, posX-32+16, posY-32+5, 64/2, 64);
 	}
 
 	this.setIsMine = function(isMe){
@@ -89,6 +101,15 @@ function Character(){
 		verticalMovementUpdate();
 		move(speedX, speedY);
 		if(!isMine) interpolate();
+
+		// debug
+		if(!ISSERVER && isMine){
+			var keys = KeyboardJS.activeKeys();
+			if(containsArray(keys, 'h'))
+				that.hurt(20);
+			if(containsArray(keys, 'd'))
+				die();
+		}
 	}
 
 	// move and check for collision
@@ -156,7 +177,12 @@ function Character(){
 
 	}
 
+	var uninterruptedAnimation = false;
 	var setAnimation = function(animName){
+
+		if(uninterruptedAnimation)
+			return;
+
 		switch(animName){
 			case "Walk":
 				spriteMovieClip.textures = walkTextures;
@@ -170,34 +196,63 @@ function Character(){
 
 			case "Jump":
 				spriteMovieClip.textures = jumpTextures;
-				//spriteMovieClip.animationSpeed = 0.1;
+				break;
+
+			case "Die":
+				spriteMovieClip.textures = dieTextures;
+				spriteMovieClip.animationSpeed = 0.7;
+				break;
+
+			case "Hurt":
+				spriteMovieClip.textures = hurtTextures;
+				spriteMovieClip.animationSpeed = 0.9;
+				spriteMovieClip.onComplete = uninterruptedAnimationResume;
 				break;
 		}
+
+		// animations that cannot be interrupted by other animations
+		if(animName == "Die" || animName == "Hurt"){
+			spriteMovieClip.loop = false;
+			spriteMovieClip.gotoAndPlay (0);
+			uninterruptedAnimation = true;
+		}
+
+	}
+
+	var uninterruptedAnimationResume = function(){
+		uninterruptedAnimation = false;
+		spriteMovieClip.loop = true;
+		spriteMovieClip.play();
+		spriteMovieClip.onComplete = null;
 	}
 
 	// simply move horizontally, check should be done in move function
 	var moveBlindlyX = function(deltaX){
 		if(!ISSERVER) spriteMovieClip.position.x += deltaX;
+		if(isMine) stage.position.x -= deltaX;
 		posX += deltaX;
 		wallDetector.moveX(deltaX);
 		floorDetector.moveX(deltaX);
 		hoverDetector.moveX(deltaX);
 		headDetector.moveX(deltaX);
+		bodyDetector.moveX(deltaX);
 	}
 
 	// simply move vertically, check should be done in move function
 	var moveBlindlyY = function(deltaY){
 		if(!ISSERVER) spriteMovieClip.position.y += deltaY;
+		if(isMine) stage.position.y -= deltaY;
 		posY += deltaY;
 		wallDetector.moveY(deltaY);
 		floorDetector.moveY(deltaY);
 		hoverDetector.moveY(deltaY);
 		headDetector.moveY(deltaY);
+		bodyDetector.moveY(deltaY);
 	}
 
 	var holdingKey = [];
 	var horizontalMovementUpdate = function(){
-		if(!ISSERVER && isMine){
+		if(!ISSERVER && isMine && !stopInput){
 			var keys = KeyboardJS.activeKeys();
 
 			var leftDown, rightDown;
@@ -267,7 +322,7 @@ function Character(){
 			return;
 		}
 
-		if(!ISSERVER && isMine){
+		if(!ISSERVER && isMine && !stopInput){
 			// check if going to jump
 			var keys = KeyboardJS.activeKeys();
 			if(containsArray(keys, 'z'))	// player wants to jump!
@@ -283,6 +338,7 @@ function Character(){
 
 		// send jump command to server
 		if(!ISSERVER && isMine){
+			playSound(jumpSound, false);
 			console.log("sent jump command");
 			sendToServer({type:"jump"});
 		}
@@ -313,6 +369,10 @@ function Character(){
 
 	this.getPosY = function(){
 		return posY;
+	}
+
+	this.getSprite = function(){
+		return spriteMovieClip;
 	}
 
 	var interpolateValidity = 0;
@@ -361,28 +421,71 @@ function Character(){
 	}
 
 	this.interpolateTo = function(x, y){
-
 		interpolatePosX = x;
 		interpolatePosY = y;
 		interpolateValidity = 10;
-
-
-		//moveBlindlyToX(x);
-		//moveBlindlyToY(y);
 	}
 
-	/*
-	// simply move to x pos, check should be done in move function
-	var moveBlindlyToX = function(newPosX){
-		var deltaX = newPosX - posX;
-		moveBlindlyX(deltaX);
+	var die = function(){
+		that.lives--;
+		that.HP = 0;
+		setAnimation("Die");
+		stopInput = true;
+		isDead = true;
+		
+		// stop moving
+		that.setSpeedX(0);
+		holdingKey = [];
+
+		if(that.lives > 0){
+
+			// spawn after some time, else stay dead forever
+			setTimeout(function(){
+				that.HP = that.maxHP;
+				isDead = false;
+				stopInput = false;
+				uninterruptedAnimationResume();
+				makeInvincible();
+			}, 3000);
+		
+		}
+	
 	}
 
-	// simply move to x pos, check should be done in move function
-	var moveBlindlyToY = function(newPosY){
-		var deltaY = newPosY - posY;
-		moveBlindlyY(deltaY);
-	}*/
+	var invincible = false;
+	var makeInvincible = function(){
+		invincible = true;
+		
+		// flashing effect
+		var flashEffect = setInterval(function(){
+			spriteMovieClip.visible = !spriteMovieClip.visible;
+		}, 100);
+
+		// remove invincible after a while
+		setTimeout(function(){
+			invincible = false;
+			clearInterval(flashEffect);
+		}, 3000);
+	}
+
+	// return false if manage to hurt it
+	this.hurt = function(dmg){
+		
+		if(isDead || uninterruptedAnimation || invincible)
+			return false;
+		
+		that.HP -= dmg;
+		if(that.HP <= 0) die();
+		if(!isDead)
+			setAnimation("Hurt");
+		
+		return true;
+	}
+
+	// return if collided with rectangle
+	this.isColliding = function(rectangle){
+		return (bodyDetector.isIntersecting(rectangle));
+	}
 
 }
 

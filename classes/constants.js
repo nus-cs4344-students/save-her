@@ -17,7 +17,7 @@ var sendToServer = function (msg) {
 }
 
 // use with CHARACTERTYPE.PUMPKIN and so on
-var CHARACTERTYPE = new Enum("PUMPKIN", "ZOMBIE", "HUMAN", "DEVIL");
+var CHARACTERTYPE = new Enum("PUMPKIN", "MUSHROOM", "HUMAN", "DEVIL");
 
 // switch to debug mode to display collision rectangles
 var DEBUGMODE = false;

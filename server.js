@@ -11,6 +11,35 @@ require(lib_path + "utility.js");
 var players = [];
 var sockets = {};
 
+/*
+ * private method: unicast(socket, msg)
+ *
+ * unicast takes in a socket and a JSON structure 
+ * and send the message through the given socket.
+ *
+ * retrieved from PongServer.js
+ */
+var unicast = function (socket, msg) {
+    socket.write(JSON.stringify(msg));
+}
+
+// unicast to the socket owner with playerID attached
+var unicastWithPlayerID = function (socket, msg) {
+	msg['playerID'] = socket.id;
+    unicast(socket, msg);
+}
+
+// broadcast to others with playerID attached
+var broadcastRestWithPlayerID = function (socket, msg) {
+	msg['playerID'] = socket.id;
+	var messageToSend = JSON.stringify(msg);
+
+	var id;
+	for(id in sockets)
+		if(sockets[id] != socket)
+			sockets[id].write(messageToSend);
+}
+
 function Server(){
 
 	var express = require('express');
@@ -25,8 +54,15 @@ function Server(){
 
 	serverSocket.on("connection", function(socket){
 
+		// send current players to the new player
+		for(var id in sockets)
+			unicast(socket, {type: "newPlayer", playerID: id, characterType: CHARACTERTYPE.PUMPKIN})
+
 		sockets[socket.id] = socket;
 		players[socket.id] = characterFac.createCharacter(null, CHARACTERTYPE.PUMPKIN, false);
+
+		// broadcast current players with the new player
+		broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: CHARACTERTYPE.PUMPKIN})
 
 		// on receiving something from client
 		socket.on("data", function(e){
@@ -61,14 +97,8 @@ function Server(){
 			var id;
 
 			// broadcast to all other players
-			if(broadcast){
-				//console.log("broadcast" + counter++);
-				for(id in sockets){
-					if(sockets[id] != socket){
-						sockets[id].write(e);
-					}
-				}
-			}
+			if(broadcast)
+				broadcastRestWithPlayerID(socket, message);
 		});
 
 	});
@@ -88,12 +118,12 @@ function Main(){
 	var stage = null;	// server side, no concept of stage
 	var that = this;
 
-	// complete loading of assets
 	this.start = function()
 	{
 		// start updating
 		setInterval(update, FRAMEDURATION);
 
+		// create map
 		for(var i=0; i<map.length; i++){
 
 			var prev = 0;
@@ -116,10 +146,8 @@ function Main(){
 
 	// game loop
 	function update() {
-		for(var id in sockets){
-			//console.log(players[id].getPosX());
+		for(var id in sockets)
 			players[id].update();
-		}
 	}
 
 }

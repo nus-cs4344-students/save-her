@@ -17,7 +17,7 @@ function Rectangle(stage, x, y, width, height){
 		debugSprite.position.y = that.y;
 		stage.addChild(debugSprite);
 	}
-
+	
 	this.isIntersecting = function(other){
 		// code retrieved from e.James
 	    var xOverlap = valueInRange(that.x, other.x, other.x + other.width) || valueInRange(other.x, that.x, that.x + that.width);

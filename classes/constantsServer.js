@@ -9,7 +9,7 @@ function Enum() {
 }
 
 // use with CHARACTERTYPE.PUMPKIN and so on
-global.CHARACTERTYPE = new Enum("PUMPKIN", "ZOMBIE", "HUMAN", "DEVIL");
+global.CHARACTERTYPE = new Enum("PUMPKIN", "MUSHROOM", "HUMAN", "DEVIL");
 
 // switch to debug mode to display collision rectangles
 global.DEBUGMODE = false;
