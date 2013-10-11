@@ -10,6 +10,7 @@ function PlayerManager(){
     players = new Array();
 	
 	this.addPlayer = function(name){
+		
 		var playerID = playerCount;
 		players[playerID] = new Player(name,playerID);
 		playerCount++;
@@ -17,12 +18,33 @@ function PlayerManager(){
 	}
 	
 	this.setChar = function(playerID,character){
+	
 		players[playerID].setChar(character);
+	
+	}
+	
+	this.setMap = function(playerID,map){
+		
+		var session = sm.addSession(playerID);
+		players[playerID].setMap(map,session);
+		
+	}
+	
+	this.getLastSession = function(playerID){
+	
+		return players[playerID].getLastSession();
+	
 	}
 	
 	this.getChar = function(playerID){
 	
 		return players[playerID].getChar();
+	
+	}
+	
+	this.getCharAvatar = function(playerID){
+	
+		return players[playerID].getCharAvatar();
 	
 	}
 	
@@ -32,4 +54,19 @@ function PlayerManager(){
 	
 	}	
 	
+	this.getAllPlayers = function(){
+		
+		return players;
+	
+	}
+	
+	this.getTotalPlayers = function(){
+	
+		return playerCount;
+	
+	}
 }
+
+
+// For node.js require
+global.PlayerManager = PlayerManager;
