@@ -8,7 +8,7 @@ function Player(name,id){
 	var map;
 	var session;
 	
-	characer = "";
+	character = "";
 	avatar = "";
 	map = "";
 	session = "";

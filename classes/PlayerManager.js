@@ -49,7 +49,10 @@ function PlayerManager(){
 	}
 	
 	this.getPlayerById = function(playerID){
-	
+		
+		if (players[playerID] == null){
+			return null;
+		}
 		return players[playerID].getName();
 	
 	}	

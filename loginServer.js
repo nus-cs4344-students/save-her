@@ -8,6 +8,7 @@ require(lib_path + "Session.js");
 
 function loginServer(){
 
+	var serverSocket;
 	var playerSockets;
 	
 	var pm,sm;
@@ -15,9 +16,9 @@ function loginServer(){
 	var express = require('express');
 	var http = require('http');
 	var sockjs = require('sockjs');
-
-	var serverSocket = sockjs.createServer();		
-	
+ 
+	serverSocket = sockjs.createServer();		
+	playerSockets = new Array();
 	pm = new PlayerManager();
 	sm = new SessionManager();
 	
@@ -28,6 +29,16 @@ function loginServer(){
 	var setPlayer = function(playerID,socket){
 		
 		playerSockets[playerID] = socket;
+		
+	}
+	
+	var isExists = function(playerID){
+		
+		if (pm.getPlayerById(playerID)!=null){
+			return true;
+		} else{
+			return false;
+		}
 		
 	}
 	
@@ -51,6 +62,7 @@ function loginServer(){
 							break;
 						case "relog_player":
 							if (isExists(message.playerID)){
+								console.log("existing player relogging");
 								setPlayer(message.playerID,socket);
 								var pInfo = {
 									type:"relog_player",

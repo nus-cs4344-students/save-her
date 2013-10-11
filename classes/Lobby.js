@@ -21,6 +21,8 @@ function Lobby(){
 	var mainLobby;
 	var selectMap;
 	
+	var cs_flag = false; //this flag is to help mark the charSelect frame so that it only needs to be loaded once, after which just be toggled visible
+	
 	/*
      * private method: sendToServer(msg)
      *
@@ -33,9 +35,7 @@ function Lobby(){
     var sendToServer = function (msg) {
         socket.send(JSON.stringify(msg));
     }	
-	
-	
-	
+		
     /*
      * private method: initNetwork(msg)
      *
@@ -46,7 +46,7 @@ function Lobby(){
     var initNetwork = function() {
         // Attempts to connect to game server
         try {
-            socket = new SockJS("http://localhost:4001/game");
+            socket = new SockJS("http://localhost:4001/SaveHer");
             socket.onmessage = function (e) {
                 var message = JSON.parse(e.data);
                 switch (message.type) {
@@ -56,7 +56,7 @@ function Lobby(){
 						setCookie("player",playerID,1);
 						console.log(player + " " + playerID);
 						break;
-					case "relog_player":						
+					case "relog_player":	
 						player = message.player;
 						character = message.character;
 						avatar = message.avatar;
@@ -79,21 +79,14 @@ function Lobby(){
             console.log("Failed to connect to " + "http://" + Pong.SERVER_NAME + ":" + Pong.PORT);
         }
     }
-	
-	this.start = function() {
-		initNetwork();
 		
-		zebra.ready(function(){
-			// build Zebra stage 
-			stage = new zebra.ui.zCanvas(700,400);
-			root    = stage.root;
-			root.setBackground("yellow");
-			
-			//panel for startup
-			showStart();		
-
-		})
-    }
+    /*
+     * private method: showStart()
+     *
+     * The first frame to show when browser loads.
+	 * Player is asked to click anywhere in the game area to proceed.
+	 *
+     */
 	
 	var showStart = function(){
 		begin = new zebra.ui.Panel(zebra.ui.MouseListener,[function mouseClicked(e) {
@@ -111,7 +104,15 @@ function Lobby(){
 		begin.setBounds(10,10, 680, 380);
 		root.add(begin);
 		begin.add(zebra.layout.CENTER,new zebra.ui.Label("Click Game Area to begin!"));
-	}
+	}	
+	
+    /*
+     * private method: showLogin()
+     *
+     * If it is a new player, he will be asked to input a name here.
+	 * Based on the name, the loginServer will help to create a new player.
+	 *
+     */
 	
 	var showLogin = function(){
 		login = new zebra.ui.Panel();
@@ -133,51 +134,76 @@ function Lobby(){
 		login.add(zebra.layout.CENTER,nextButton);
 	}
 	
+    /*
+     * private method: showLogin()
+     *
+     * Player is asked to choose his character here.
+	 * Player can change character multiple times so it is important to note that:
+	 * Each time this frame is shown, it should not be "new" again. Want to just toggle 
+	 * it on and off by setVisible(). Thus a cs_flag is used to check if this is the first
+	 * time this frame is displayed, if yes: load everything from scratch, else: toggle visible true.
+	 *
+     */
+	
 	var showSelectChar = function(){
-		charSelect = new zebra.ui.Panel();
-		charSelect.setLayout(new zebra.layout.FlowLayout(zebra.layout.CENTER,zebra.layout.CENTER,zebra.layout.HORIZONTAL, 2));
-		charSelect.setBounds(10,10, 680, 380);
-		root.add(charSelect);
-		prompt = new zebra.ui.Label("Select your character: ");
-		charSelect.add(zebra.layout.CENTER,prompt);
-		var devilz = new zebra.ui.ImagePan("images/devilz.gif",zebra.ui.MouseListener,[function mouseClicked(e){
-			charSelect.setVisible(false);
-			character = "devilz";
-			avatar = "images/devilz.gif";
-			sendToServer({type:"set_char", playerID:playerID,character:character}); 
-			console.log("selected devilz");
-			showMainLobby();
-		}]);
-		var shroom = new zebra.ui.ImagePan("images/shroom.gif",zebra.ui.MouseListener,[function mouseClicked(e){
-			charSelect.setVisible(false);
-			character = "shroom";			
-			avatar = "images/shroom.gif";
-			sendToServer({type:"set_char", playerID:playerID,character:character}); 
-			console.log("selected shroom");
-			showMainLobby();
-		}]);
-		var pompkin = new zebra.ui.ImagePan("images/pompkin.gif",zebra.ui.MouseListener,[function mouseClicked(e){
-			charSelect.setVisible(false);
-			character = "pompkin";			
-			avatar = "images/pompkin.gif";
-			sendToServer({type:"set_char", playerID:playerID,character:character}); 
-			console.log("selected pompkin");
-			showMainLobby();
-		}]);
-		var human = new zebra.ui.ImagePan("images/human.gif",zebra.ui.MouseListener,[function mouseClicked(e){
-			charSelect.setVisible(false);
-			character = "human";		
-			avatar = "images/human.gif";		
-			sendToServer({type:"set_char", playerID:playerID,character:character}); 
-			console.log("selected human");
-			showMainLobby();
-		}]);
-		charSelect.add(zebra.layout.CENTER,pompkin);
-		charSelect.add(zebra.layout.CENTER,human);
-		charSelect.add(zebra.layout.CENTER,devilz);
-		charSelect.add(zebra.layout.CENTER,shroom);
+		if (!cs_flag){
+			cs_flag = true;
+			charSelect = new zebra.ui.Panel();
+			charSelect.setLayout(new zebra.layout.FlowLayout(zebra.layout.CENTER,zebra.layout.CENTER,zebra.layout.HORIZONTAL, 2));
+			charSelect.setBounds(10,10, 680, 380);
+			root.add(charSelect);
+			prompt = new zebra.ui.Label("Select your character: ");
+			charSelect.add(zebra.layout.CENTER,prompt);
+			var devilz = new zebra.ui.ImagePan("images/devilz.gif",zebra.ui.MouseListener,[function mouseClicked(e){
+				charSelect.setVisible(false);
+				character = "devilz";
+				avatar = "images/devilz.gif";
+				sendToServer({type:"set_char", playerID:playerID,character:character}); 
+				console.log("selected devilz");
+				showMainLobby();
+			}]);
+			var shroom = new zebra.ui.ImagePan("images/shroom.gif",zebra.ui.MouseListener,[function mouseClicked(e){
+				charSelect.setVisible(false);
+				character = "shroom";			
+				avatar = "images/shroom.gif";
+				sendToServer({type:"set_char", playerID:playerID,character:character}); 
+				console.log("selected shroom");
+				showMainLobby();
+			}]);
+			var pompkin = new zebra.ui.ImagePan("images/pompkin.gif",zebra.ui.MouseListener,[function mouseClicked(e){
+				charSelect.setVisible(false);
+				character = "pompkin";			
+				avatar = "images/pompkin.gif";
+				sendToServer({type:"set_char", playerID:playerID,character:character}); 
+				console.log("selected pompkin");
+				showMainLobby();
+			}]);
+			var human = new zebra.ui.ImagePan("images/human.gif",zebra.ui.MouseListener,[function mouseClicked(e){
+				charSelect.setVisible(false);
+				character = "human";		
+				avatar = "images/human.gif";		
+				sendToServer({type:"set_char", playerID:playerID,character:character}); 
+				console.log("selected human");
+				showMainLobby();
+			}]);
+			charSelect.add(zebra.layout.CENTER,pompkin);
+			charSelect.add(zebra.layout.CENTER,human);
+			charSelect.add(zebra.layout.CENTER,devilz);
+			charSelect.add(zebra.layout.CENTER,shroom);
+		} else{
+			charSelect.setVisible(true);
+		}
 	}
 	
+    /*
+     * private method: showMainLobby()
+     *
+	 * This is where Player selects whether he wants to join an
+	 * existing session or create a new game session. 
+	 * He can also change his character here.
+	 *
+     */
+	 
 	var showMainLobby = function(){
 		mainLobby = new zebra.ui.Panel();
 		mainLobby.setLayout(new zebra.layout.FlowLayout(zebra.layout.CENTER,zebra.layout.CENTER,zebra.layout.VERTICAL, 2));
@@ -188,7 +214,7 @@ function Lobby(){
 			var prompt = new zebra.ui.MLabel("Welcome, " + player + ".\nCurrently selected character: " + character + "\n(Click on character to change.)");
 			var avatarPan = new zebra.ui.ImagePan(avatar,zebra.ui.MouseListener,[function mouseClicked(e){
 				mainLobby.setVisible(false);
-				charSelect.setVisible(true);
+				showSelectChar();
 			}]);
 			mainLobby.add(avatarPan);
 			mainLobby.add(prompt);		
@@ -211,6 +237,14 @@ function Lobby(){
 		newGameButton.setFireParams(true,-1);
 		mainLobby.add(newGameButton);
 	}
+	
+    /*
+     * private method: showSelectMap()
+     *
+     * This is where the player choose a new map when he wants to
+	 * create a new session. 
+	 *
+     */
 	
 	var showSelectMap = function(){
 		selectMap = new zebra.ui.Panel();
@@ -270,9 +304,26 @@ function Lobby(){
 		hoverC3.setVisible(false);
 	}
 	
+	
+    /*
+     * private method: connectGame()
+     *
+     * TODO
+	 *
+     */
+	
 	var connectGame = function(){
 	
 	}
+	
+    /*
+     * private method: setCookie()
+     *
+     * When a new player is created, a cookie is also saved.
+	 * Cookie contains player's ID, so that can detect when he 
+	 * reconnects to the server.
+	 *
+     */
 	
 	var setCookie = function(cookieName,playerID,validity) {
 		var exp=new Date();
@@ -280,6 +331,15 @@ function Lobby(){
 		var cookieValue=escape(playerID) + ((validity==null) ? "" : "; expires="+exp.toUTCString());
 		document.cookie=cookieName + "=" + cookieValue;
 	}
+	
+    /*
+     * private method: getCookie()
+     *
+     * When browser is open, checks if player has played before 
+	 * within the day. If yes, skip showLogin() and go
+	 * straight to showMainLobby()
+	 *
+     */
 	
 	var getCookie = function(cookieName){
 		var cookie = document.cookie;
@@ -300,6 +360,15 @@ function Lobby(){
 		return cookie;
 	}	
 	
+    /*
+     * private method: isReturningPlayer()
+     *
+     * Using the cookie, determine if a player has played before 
+	 * within the day. If yes, skip showLogin() and go
+	 * straight to showMainLobby()
+	 *
+     */
+	
 	var isReturningPlayer = function() {
 		var player=getCookie("player");
 		if (player!=null && player!="") {
@@ -309,16 +378,59 @@ function Lobby(){
 		}
 	}
 	
+    /*
+     * private method: retrieveReturningPlayer()
+     *
+     * Using the cookie, determine if a player has played before 
+	 * within the day. Get his playerID from cookie.
+	 *
+     */	
+	
 	var retrieveReturningPlayer = function() {
-		var player=getCookie("player");
-		return player;
+		var pid=getCookie("player");
+		return pid;
 	}
+	
+	
+    /*
+     * private method: newPlayer()
+     *
+     * If a player is new, just send a message to the server
+	 * to notify and setup the necessary variables associated with
+	 * the player
+	 *
+     */
 	
 	var newPlayer = function(player) {
 	
 		sendToServer({type:"new_player", player:player}); 
 	
 	}
+	
+	
+	/*
+     * public method: start()
+     *
+     * Basically the entry point to the client
+     * 
+     */
+	 
+	this.start = function() {
+		//setup connection
+		initNetwork();
+		
+		zebra.ready(function(){
+			// build Zebra stage 
+			stage = new zebra.ui.zCanvas(700,400);
+			root    = stage.root;
+			root.setBackground("yellow");
+			
+			//panel for startup
+			showStart();		
+
+		})
+    }
+	
 }
  
 // Load lobby after 0.5s, wait for libraries
