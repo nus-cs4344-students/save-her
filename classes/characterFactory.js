@@ -78,6 +78,7 @@ function CharacterFactory(){
 
 		character.initDetectors();
 		character.setIsMine(isMine);
+                
 		return character;
 	};
 

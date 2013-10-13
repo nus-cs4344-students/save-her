@@ -8,11 +8,11 @@ function Rectangle(stage, x, y, width, height){
 	this.height = height;
 	var stage = stage;
 	var that = this;
-
+        var debugSprite;
 	// draw rectangle
 	if(DEBUGMODE){
 		var debugPixTexture = PIXI.Texture.fromImage("PIXI/debugPix.png");
-		var debugSprite = new PIXI.TilingSprite(debugPixTexture, that.width, that.height);
+		debugSprite = new PIXI.TilingSprite(debugPixTexture, that.width, that.height);
 		debugSprite.position.x = that.x;
 		debugSprite.position.y = that.y;
 		stage.addChild(debugSprite);
@@ -55,7 +55,9 @@ function Rectangle(stage, x, y, width, height){
 		if(DEBUGMODE) debugSprite.width += width;
 
 	}
-
+        this.destroy = function(){
+            stage.removeChild(debugSprite);
+        }
 }
 
 // For node.js require

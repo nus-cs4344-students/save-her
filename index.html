@@ -35,7 +35,8 @@
 		var ownCharacter;		// own player's character
 		var characters = [];	// other players' character
 
-		var myBulletManager;	// bullet manager
+		var ownBulletManager;	// bullet manager
+		var bulletManagers = [];
 		var mapRects = [];		// collision rectangles for map
 
 		function Main(){
@@ -128,7 +129,7 @@
 				// @PRISCILLA - this is where your own character is created
 				var characterFac = new CharacterFactory();
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
-				myBulletManager = new bulletManager(camera, ownCharacter);
+				ownBulletManager = new BulletManager(camera, ownCharacter,true, false);
 				
 				// set camera to player
 				camera.position.x = ownCharacter.getSprite().position.x + 200;
@@ -154,6 +155,7 @@
 	                	// playerID corresponds to the socket id of the player
 	                	case "newPlayer":
                 			characters[message.playerID] = characterFac.createCharacter(camera, message.characterType, false);
+							bulletManagers[message.playerID] = new BulletManager(camera,characters[message.playerID],false, false);
                 			addPlayerGUI(stage);
                 			break;
 
@@ -170,6 +172,17 @@
 		                // change velocity in horizontal component
 		                case "speedX":
 		                	characters[message.playerID].setSpeedX(message.x);
+							break;
+						case "shoot":
+							bulletManagers[message.playerID].setDir(message.dir);
+							bulletManagers[message.playerID].shoot();
+							break;
+						case "hurt":
+							if(typeof(characters[message.p2])!="undefined")
+								characters[message.p2].hurt(message.dmg);
+							else
+								ownCharacter.hurt(message.dmg);
+							break;
 	                }
 
 				}
@@ -182,6 +195,7 @@
 			}
 
 			// game loop
+	
 			function update() {
 				
 				// update characters
@@ -190,7 +204,7 @@
 					ownCharacter.update();
 					
 					// update bullets
-					myBulletManager.update();
+					ownBulletManager.update(characters,null,null);
 
 					// update UI
 					gameGUIUpdate();
@@ -199,7 +213,12 @@
 				// update all other characters
 				var playerID;
 				for(playerID in characters)
+				{
 					characters[playerID].update();
+					bulletManagers[playerID].update(characters,ownCharacter,playerID);
+					
+					//alert(playerID);
+				}
 			}
 
 		}

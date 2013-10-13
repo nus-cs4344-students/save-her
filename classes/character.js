@@ -429,7 +429,8 @@ function Character(){
 	var die = function(){
 		that.lives--;
 		that.HP = 0;
-		setAnimation("Die");
+                if (!ISSERVER)
+                    setAnimation("Die");
 		stopInput = true;
 		isDead = true;
 		
@@ -444,7 +445,8 @@ function Character(){
 				that.HP = that.maxHP;
 				isDead = false;
 				stopInput = false;
-				uninterruptedAnimationResume();
+                                if (!ISSERVER)
+                                    uninterruptedAnimationResume();
 				makeInvincible();
 			}, 3000);
 		
@@ -457,6 +459,7 @@ function Character(){
 		invincible = true;
 		
 		// flashing effect
+                if (!ISSERVER)
 		var flashEffect = setInterval(function(){
 			spriteMovieClip.visible = !spriteMovieClip.visible;
 		}, 100);
@@ -465,7 +468,7 @@ function Character(){
 		setTimeout(function(){
 			invincible = false;
 			clearInterval(flashEffect);
-		}, 3000);
+		}, 3100);
 	}
 
 	// return false if manage to hurt it
@@ -476,6 +479,7 @@ function Character(){
 		
 		that.HP -= dmg;
 		if(that.HP <= 0) die();
+                if (!ISSERVER)
 		if(!isDead)
 			setAnimation("Hurt");
 		

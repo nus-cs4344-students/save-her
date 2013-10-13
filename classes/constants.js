@@ -11,9 +11,9 @@ function Enum() {
 var socket;	// global
 var socketReady = false;
 // retrieved from PongClient
-var sendToServer = function (msg) {
-	if(socketReady)
-		socket.send(JSON.stringify(msg));
+var sendToServer = function(msg) {
+    if (socketReady)
+        socket.send(JSON.stringify(msg));
 }
 
 // use with CHARACTERTYPE.PUMPKIN and so on
@@ -32,11 +32,11 @@ var CHARACTERJUMPGRAVITATIONALPULL = 3;	// higher = less pull
 
 var ISSERVER = false;
 
-var map = [[0,0,0,0,0,0,0,0,0,0,0,0,0],
-		   [0,0,0,0,0,0,0,0,0,0,0,0,0],
-		   [0,0,0,0,0,0,0,0,0,1,0,0,0],
-		   [0,0,1,1,0,0,0,0,0,1,0,0,0],
-		   [0,0,0,0,0,0,0,0,0,0,0,0,0],
-		   [0,0,0,0,0,0,0,0,0,0,0,0,0],
-		   [1,0,0,0,0,1,1,0,0,0,0,0,0],
-		   [1,1,1,1,1,1,1,1,1,1,1,1,1]];
+var map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]];
