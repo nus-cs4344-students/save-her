@@ -6,8 +6,6 @@ function Lobby(){
 	var stage;
 	var root;
 	
-	var sm;
-	var pm;
 	var player;
 	var playerID;
 	var character;
@@ -15,6 +13,7 @@ function Lobby(){
 	var map;
 	var session;
 	
+	var loading;
 	var begin;
 	var login;
 	var charSelect;
@@ -22,6 +21,7 @@ function Lobby(){
 	var selectMap;
 	
 	var cs_flag = false; //this flag is to help mark the charSelect frame so that it only needs to be loaded once, after which just be toggled visible
+	var allSessions = new Array();
 	
 	/*
      * private method: sendToServer(msg)
@@ -65,13 +65,23 @@ function Lobby(){
 						showMainLobby();
 						break;
 					case "join_game":
-					
+						root.setVisible(false);
+						connectGame();
 						break;
 					case "new_game":
-					
+						session = message.sessionID;
+						console.log("received new_game from server, sessionID = #" + session);
+						connectGame();
 						break;
 					case "PlayerNotFound":
 						showLogin();
+						break;
+					case "get_all_sessions":
+						allSessions = message.allSessions;
+						console.log("received all sessions, checking now:");
+						for (var j = 0; j < allSessions.length; j++){						
+							console.log("sessionID = " + allSessions[j].sessionID + ", numPlayers = " + allSessions[j].numPlayers);
+						}
 						break;
 				}
             }
@@ -89,6 +99,15 @@ function Lobby(){
      */
 	
 	var showStart = function(){
+		//prepare loading screen, set invisible
+		loading = new zebra.ui.Panel();
+		loading.setLayout(new zebra.layout.FlowLayout(zebra.layout.CENTER,zebra.layout.CENTER,zebra.layout.VERTICAL, 2));
+		loading.setBounds(10,10, 680, 380);
+		loading.setVisible(false);
+		root.add(loading);
+		loading.add(zebra.layout.CENTER,new zebra.ui.Label("Game Loading..."));
+		
+		//starting screen
 		begin = new zebra.ui.Panel(zebra.ui.MouseListener,[function mouseClicked(e) {
 			begin.setVisible(false);
 			if (isReturningPlayer()){
@@ -104,6 +123,7 @@ function Lobby(){
 		begin.setBounds(10,10, 680, 380);
 		root.add(begin);
 		begin.add(zebra.layout.CENTER,new zebra.ui.Label("Click Game Area to begin!"));
+
 	}	
 	
     /*
@@ -204,9 +224,12 @@ function Lobby(){
 	 *
      */
 	 
-	var showMainLobby = function(){
+	var showMainLobby = function(){	
+		//retrieve all sessions, to be displayed later
+		setInterval(function(){sendToServer({type:"get_all_sessions", playerID:playerID})},1000);
+		
 		mainLobby = new zebra.ui.Panel();
-		mainLobby.setLayout(new zebra.layout.FlowLayout(zebra.layout.CENTER,zebra.layout.CENTER,zebra.layout.VERTICAL, 2));
+		mainLobby.setLayout(new zebra.layout.RasterLayout(zebra.layout.USE_PS_SIZE));
 		mainLobby.setBounds(10,10, 680, 380);
 		root.add(mainLobby);
 		
@@ -216,6 +239,8 @@ function Lobby(){
 				mainLobby.setVisible(false);
 				showSelectChar();
 			}]);
+			avatarPan.setLocation(10,10);
+			prompt.setLocation(10,50);
 			mainLobby.add(avatarPan);
 			mainLobby.add(prompt);		
 		} else{
@@ -224,16 +249,45 @@ function Lobby(){
 				mainLobby.setVisible(false);
 				showSelectChar();
 			}]);
+			prompt.setLocation(10,10);
+			selectCharButton.setLocation(10,50);
 			selectCharButton.setFireParams(true,-1);
 			mainLobby.add(prompt);
 			mainLobby.add(selectCharButton);
 		}
-		
+		//JOIN EXISTING GAME
+		var count = 0;
+		var yposition = 180;
+		setInterval(function(){
+			while (allSessions.length != count){			
+				count = allSessions.length;
+				for(var i = 0; i < allSessions.length; i++){
+					console.log("displaying.." + allSessions[i].sessionID);
+					var s = new zebra.ui.Label("Session #" + allSessions[i].sessionID + ": Map " + allSessions[i].map + " (" + allSessions[i].numPlayers + " Players connected)");
+					var joinGameButton =  new zebra.ui.Button("Join!",zebra.ui.MouseListener,[function mouseClicked(e){
+						mainLobby.setVisible(false);	
+						loading.setVisible(true);
+						console.log("join session");
+						session = allSessions[i].getSessionID();
+						sendToServer({type:"join_game", playerID:playerID, sessionID:session}); 
+					}]);
+					s.setLocation(300,yposition);
+					joinGameButton.setLocation(220,yposition-10);
+					newGameButton.setFireParams(true,-1);
+					mainLobby.add(s);
+					mainLobby.add(joinGameButton);
+					yposition += 50;
+				}
+			}
+		},1000);		
+			
+		//CREATE NEW GAME
 		var newGameButton =  new zebra.ui.Button("Create New Game",zebra.ui.MouseListener,[function mouseClicked(e){
 			mainLobby.setVisible(false);	
 			console.log("new session");
 			showSelectMap();
 		}]);
+		newGameButton.setLocation(300, 60);
 		newGameButton.setFireParams(true,-1);
 		mainLobby.add(newGameButton);
 	}
@@ -256,7 +310,7 @@ function Lobby(){
 			selectMap.setVisible(false);
 			map = 1;
 			console.log("selected map 1");
-			connectGame();
+			newGame();
 		}, function mouseEntered(e){
 			hoverC0.setVisible(false);
 			hoverC1.setVisible(true);
@@ -268,7 +322,7 @@ function Lobby(){
 			selectMap.setVisible(false);
 			map = 2;
 			console.log("selected map 2");
-			connectGame();
+			newGame();
 		}, function mouseEntered(e){
 			hoverC0.setVisible(false);
 			hoverC2.setVisible(true);
@@ -280,7 +334,7 @@ function Lobby(){
 			selectMap.setVisible(false);
 			map = 3;
 			console.log("selected map 3");
-			connectGame();
+			newGame();
 		}, function mouseEntered(e){
 			hoverC0.setVisible(false);
 			hoverC3.setVisible(true);
@@ -314,6 +368,21 @@ function Lobby(){
 	
 	var connectGame = function(){
 	
+		var game = new Game(session);
+	
+	}
+	
+    /*
+     * private method: newGame()
+     *
+     * TODO
+	 *
+     */
+	
+	var newGame = function(){
+	
+		sendToServer({type:"new_game", playerID:playerID, ownerID:playerID, map:map}); 
+		
 	}
 	
     /*

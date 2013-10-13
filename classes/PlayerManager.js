@@ -28,6 +28,12 @@ function PlayerManager(){
 		var session = sm.addSession(playerID);
 		players[playerID].setMap(map,session);
 		
+	}	
+	
+	this.setSession = function(playerID,s){
+	
+		players[playerID].setSession(s);
+	
 	}
 	
 	this.getLastSession = function(playerID){

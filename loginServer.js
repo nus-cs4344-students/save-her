@@ -10,6 +10,7 @@ function loginServer(){
 
 	var serverSocket;
 	var playerSockets;
+	var sessionChild;
 	
 	var pm,sm;
 
@@ -19,6 +20,7 @@ function loginServer(){
  
 	serverSocket = sockjs.createServer();		
 	playerSockets = new Array();
+	sessionChild = new Array();
 	pm = new PlayerManager();
 	sm = new SessionManager();
 	
@@ -79,11 +81,37 @@ function loginServer(){
 						case "set_char":
 							pm.setChar(message.playerID,message.character);							
 							break
-						case "join_game":
-						
+						case "join_game":		
+							console.log("now setting player's session");
+							pm.setSession(message.playerID,newSessionID);							
+							console.log("checking player's session: " + pm.getLastSession(message.playerID));
+							unicast(playerSockets[message.playerID],{type:"join_game"});
 							break;
 						case "new_game":
-						
+							console.log("received new_game, setting up now...");
+							var newSessionID = sm.addSession(message.ownerID,message.map);
+							console.log("new game session ID: "+ newSessionID);
+							var tmp = sm.getSession(newSessionID);
+							console.log("session: " + tmp);
+							console.log("sessionInfo: sessionID=" + tmp.sessionID + ", numPlayer = " + tmp.numPlayers + ", map = " + tmp.map);
+							// need to create a child server for the player to connect to
+							try{
+								sessionChild[newSessionID] = require('child_process').fork('server.js');
+								console.log("new child created");
+							} catch (f) {
+								console.log("Child-creating Error: " + f);
+							}
+							console.log("now setting player's session");
+							pm.setSession(message.playerID,newSessionID);							
+							console.log("checking player's session: " + pm.getLastSession(message.playerID));
+							unicast(playerSockets[message.playerID],{type:"new_game",sessionID:newSessionID});
+							break;
+						case "get_all_sessions":
+							unicast(playerSockets[message.playerID],{type:"get_all_sessions",allSessions:sm.getAllSessions()});
+							break;
+						default:							
+							//handling messages directed to the child server
+							sessionChild[message.sessionID].send('server',serverSocket);
 							break;
 					}
 				});	

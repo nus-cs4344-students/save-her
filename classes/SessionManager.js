@@ -9,11 +9,15 @@ function SessionManager(){
 	sessionCount = 0;
     sessions = new Array();
 	
-	this.addSession = function(ownerID){		
+	this.addSession = function(ownerID,map){		
 		var sessionID = sessionCount;
-		sessions[sessionID] = new Session(ownerID);
+		sessions[sessionID] = new Session(ownerID,sessionID,map);
 		sessionCount++;
 		return sessionID;
+	}
+	
+	this.getSession = function(sessionID){
+		return sessions[sessionID];
 	}
 	
 	this.getTotalSessions = function(){

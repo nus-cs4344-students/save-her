@@ -1,15 +1,20 @@
 "use strict"; 
  
-function Session(playerID){
+function Session(owner,id,m){
 	
-	var ownerID = playerID;
+	var that = this;
+	this.ownerID = owner;
+	this.sessionID = id;
+	this.numPlayers = 1;
+	this.map = m;
+	this.players = new Array();
+	this.players[0] = owner;
 	
-	this.getOwner = function(){
-		return ownerID;
-	}
-	
-	this.getSocket = function(){
-		return socket;
+	this.addPlayer = function(playerID){
+		
+		that.players[numPlayers] = playerID;
+		that.numPlayers++;
+		
 	}
 }
 
