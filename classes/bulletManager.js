@@ -61,6 +61,8 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
 
                         if (players[j].isColliding(bullets[i].getRect()))
                         {
+							//play sound if bullet hit
+							playSound(bulletHit, false);
                             bullets[i].destroy();
                             //alert(bullets[i].getTtl());
                             bullets.splice(i, 1);
@@ -76,6 +78,8 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 {
                     if (own.isColliding(bullets[i].getRect()))
                     {
+						//play sound if bullet hit
+						playSound(bulletHit, false);
                         bullets[i].destroy();
                         //alert(bullets[i].getTtl());
                         bullets.splice(i, 1);
@@ -101,6 +105,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
 
         }
         // console.log(bullets.length);
+		
         if (isServer)
             return that.detectCollision(players, null, id);
         else
@@ -109,7 +114,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 that.detectCollision(players, own, id);
             else
             {
-                that.detectCollision(players, null, null);
+                that.detectCollision(players, null, null); 
             }
 
         if (that.isMine) {
@@ -123,7 +128,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 if (keys[i] == 'space')
                 {
                     that.shoot();
-
+					playSound(bulletSound, false);
                 }
 
             }

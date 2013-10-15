@@ -6,6 +6,13 @@ var gameMusic = "Sounds/107 Thumbs Up!.mp3";
 // sound
 var jumpSound = "Sounds/JumpSound.wav";
 
+// bullet sound
+
+var bulletSound = "Sounds/bullet1.wav";
+
+// bullet hit
+var bulletHit = "Sounds/bulletHit.wav";
+
 // initialise before making any play sounds call
 function initSounds(){
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
