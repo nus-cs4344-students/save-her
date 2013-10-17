@@ -482,6 +482,7 @@ function Character(){
 		// remove invincible after a while
 		setTimeout(function(){
 			invincible = false;
+			spriteMovieClip.visible = true;
 			clearInterval(flashEffect);
 		}, 3100);
 	}
