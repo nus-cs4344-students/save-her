@@ -121,17 +121,18 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
             var keys = KeyboardJS.activeKeys();
             for (var i = 0; i < keys.length; i++)
             {
-                if (keys[i] == 'left')
-                    dir = 1;
-                if (keys[i] == 'right')
-                    dir = 0;
-                if (keys[i] == 'space')
+                if (keys[i] == 'z')
                 {
                     that.shoot();
 					playSound(bulletSound, false);
                 }
 
             }
+
+            if(player.isFacingRight())
+                dir = 0;
+            else
+                dir = 1;
         }
     }
     this.setDir = function(dirA) {
@@ -142,14 +143,24 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
         var y = player.getPosY();
         var now = (new Date()).getTime();
         if (now - that.lastShootTime > that.shootDuration) {
+
             if (that.isMine)
                 sendToServer({type: "shoot", dir: dir});
+
+            var yOffset = 0;
+            // huamn holds gun higher
+            if(player.characterType == CHARACTERTYPE.HUMAN)
+                yOffset = -10;
+
+            // create firing effect
+            if(!ISSERVER) createFiringFX(x, y + yOffset, dir);
+
             if (dir == 0) {
                 var startX = x;
                 var startY = y;
                 //console.log(x+" "+y);
 
-                var newBullet = new bullet(stage, x, y, speed, "PIXI/bulletRight.png", isServer);
+                var newBullet = new bullet(stage, x, y + yOffset, speed, "bullet.png", isServer);
 
                 //sendToServer({type:"bullet",x:x,y:y,speed:20,tex:"PIXI/bulletRight.png"});
                 bullets.push(newBullet);
@@ -158,7 +169,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
             if (dir == 1) {
                 var startX = x;
                 var startY = y;
-                var newBullet = new bullet(stage, x, y, 0 - speed, "PIXI/bulletLeft.png", isServer);
+                var newBullet = new bullet(stage, x, y + yOffset, 0 - speed, "bullet.png", isServer);
                 bullets.push(newBullet);
                 //sendToServer({type:"bullet",x:x,y:y,speed:-20,tex:"PIXI/bulletLeft.png"});
                 newBullet.move();

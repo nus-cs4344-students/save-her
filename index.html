@@ -27,6 +27,7 @@
 	<script src="classes/utility.js"></script>
 	<script src="classes/soundManager.js"></script>
 	<script src="classes/gameGUIManager.js"></script>
+	<script src="classes/particleManager.js"></script>
 
 </head>
 <body>
@@ -39,14 +40,18 @@
 		var bulletManagers = [];
 		var mapRects = [];		// collision rectangles for map
 
+		var camera;
+		var cameraBack;
+
+		var mapType = Math.floor((Math.random()*3));	// 0:graveyard, 1:pixel, 2:happy
+
 		function Main(){
 
 			// initialise sounds and music
-		    //initSounds();
-		    //playSound(gameMusic, true);
+		    initSounds();
 
 			// load all art assets
-			var assetsToLoader = [ "PIXI/SpriteSheet.json", "PIXI/SpriteSheet2.json", "PIXI/PixelFont.fnt"];
+			var assetsToLoader = [ "PIXI/SpriteSheet2.json", "PIXI/PixelFont.fnt"];
 			loader = new PIXI.AssetLoader(assetsToLoader);
 			loader.onComplete = start;
 			loader.load();
@@ -68,8 +73,13 @@
 				initGameGUI(stage);
 
 				// initialise game camera
-				var camera = new PIXI.DisplayObjectContainer();
+				cameraBack = new PIXI.DisplayObjectContainer();
+				stage.addChild(cameraBack);
+				camera = new PIXI.DisplayObjectContainer();
 				stage.addChild(camera);
+
+				// initialise FX
+				initFX(camera);
 
 				// start animating
 				requestAnimFrame( animate );
@@ -77,58 +87,163 @@
 				// start updating
 				setInterval(update, FRAMEDURATION);
 
-				// render backdrop
-				var moonTexture = PIXI.Texture.fromImage("moon.png");
-				var moon = new PIXI.Sprite(moonTexture);
-				moon.position.x = 300;
-				moon.position.y = 0;
-				moon.width = moon.width*2;
-				moon.height = moon.height*2;
-				backGUI.addChild(moon);
+				var tileTexture;
+				var tileTopTexture;
+				var tileBottomTexture;
 
-				for(var i=0; i<2; i++){
-					var graveTexture = PIXI.Texture.fromImage("grave.png");
-					var grave = new PIXI.Sprite(graveTexture);
-					grave.position.x = i*graveTexture.width*2;
-					grave.position.y = 0;
-					grave.width = grave.width*2;
-					grave.height = grave.height*2;
-					backGUI.addChild(grave);
+				// render backdrop
+				switch(mapType){
+
+					// graveyard level
+					case 0:
+						playSound(gameMusic, true);
+
+						var moonTexture = PIXI.Texture.fromImage("moon.png");
+						var moon = new PIXI.Sprite(moonTexture);
+						moon.position.x = 300;
+						moon.position.y = 150;
+						moon.width = moon.width*2;
+						moon.height = moon.height*2;
+						backGUI.addChild(moon);
+
+						for(var i=0; i<2; i++){
+							var graveTexture = PIXI.Texture.fromImage("grave.png");
+							var grave = new PIXI.Sprite(graveTexture);
+							grave.position.x = i*graveTexture.width*2;
+							grave.position.y = 150;
+							grave.width = grave.width*2;
+							grave.height = grave.height*2;
+							cameraBack.addChild(grave);
+						}
+
+						tileTexture = PIXI.Texture.fromImage("graveyardTile.png");
+						tileTopTexture = PIXI.Texture.fromImage("graveyardTileTop.png");
+						tileBottomTexture = PIXI.Texture.fromImage("graveyardTileInner.png");
+						break;
+
+					// pixel level
+					case 1:
+						playSound(gameMusic3, true);
+
+						var gradientTexture = PIXI.Texture.fromImage("pixelGradient.png");
+						var gradient = new PIXI.Sprite(gradientTexture);
+						gradient.position.x = -50;
+						gradient.position.y = 0;
+						gradient.width = gradient.width*2;
+						gradient.height = gradient.height*2;
+						cameraBack.addChild(gradient);
+
+						var pixelbackTexture = PIXI.Texture.fromImage("pixelbackdrop.png");
+						var pixelback = new PIXI.Sprite(pixelbackTexture);
+						pixelback.position.x = -50;
+						pixelback.position.y = 0;
+						pixelback.width = pixelback.width*2;
+						pixelback.height = pixelback.height*2;
+						pixelback.alpha = 0.6;
+						cameraBack.addChild(pixelback);
+
+						tileTexture = PIXI.Texture.fromImage("pixelTile.png");
+						tileTopTexture = PIXI.Texture.fromImage("pixelTileTop.png");
+						tileBottomTexture = PIXI.Texture.fromImage("pixelTileInner.png");
+						break;
+
+					// happy level
+					case 2:
+						playSound(gameMusic2, true);
+
+						var hellobackTexture = PIXI.Texture.fromImage("helloBackdrop.png");
+						var helloback = new PIXI.Sprite(hellobackTexture);
+						helloback.position.x = -50;
+						helloback.position.y = 0;
+						helloback.width = helloback.width*2;
+						helloback.height = helloback.height*2;
+						cameraBack.addChild(helloback);
+
+						var seaTexture = PIXI.Texture.fromImage("sea.png");
+						var sea = new PIXI.Sprite(seaTexture);
+						sea.position.x = -50;
+						sea.position.y = 500;
+						sea.width = sea.width*2;
+						sea.height = sea.height*2;
+						cameraBack.addChild(sea);
+
+						tileTexture = PIXI.Texture.fromImage("helloTile.png");
+						tileTopTexture = PIXI.Texture.fromImage("helloTileTop.png");
+						tileBottomTexture = PIXI.Texture.fromImage("helloTileInner.png");
+						break;
 				}
 
 				// generate map
-				var tileTexture = PIXI.Texture.fromImage("tile.png");
 				for(var i=0; i<map.length; i++){
 
 					var prev = 0;
 					var prevRect;
 
 					for(var j=0; j<map[i].length; j++){
-						if(map[i][j] == 1){
-							
-							var tile = new PIXI.Sprite(tileTexture);
-							tile.position.x = j*TILEWIDTH;
-							tile.position.y = i*TILEHEIGHT;
-							tile.width = TILEWIDTH+1;
-							tile.height = TILEHEIGHT;
-							camera.addChild(tile);
+						switch(map[i][j]){
 
-							if(prev == 1)
-								prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
-							else{
-								prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
-								mapRects.push(prevRect);
-							}
+							case 1:
+								var tile = new PIXI.Sprite(tileTexture);
+								tile.position.x = j*TILEWIDTH;
+								tile.position.y = i*TILEHEIGHT;
+								tile.width = TILEWIDTH+1;
+								tile.height = TILEHEIGHT;
+								camera.addChild(tile);
+
+								if(prev == 1 || prev == 2)
+									prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
+								else{
+									prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+									mapRects.push(prevRect);
+								}
+
+								var tileTop = new PIXI.Sprite(tileTopTexture);
+								tileTop.position.x = j*TILEWIDTH;
+								tileTop.position.y = i*TILEHEIGHT-TILEHEIGHT+1;
+								tileTop.width = TILEWIDTH+1;
+								tileTop.height = TILEHEIGHT;
+								camera.addChild(tileTop);
+								break;
+
+							case 2:
+								var tile = new PIXI.Sprite(tileBottomTexture);
+								tile.position.x = j*TILEWIDTH;
+								tile.position.y = i*TILEHEIGHT-1;
+								tile.width = TILEWIDTH+1;
+								tile.height = TILEHEIGHT+1;
+								camera.addChild(tile);
+
+								if(prev == 1 || prev == 2)
+									prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
+								else{
+									prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+									mapRects.push(prevRect);
+								}
+								break;
 						}
+
 						prev = map[i][j];
 					}
 
 				}
 
 				// create OWN character
-				// @PRISCILLA - this is where your own character is created
+				// @PRISCILLA - this is where your own character is created (currently type is random)
 				var characterFac = new CharacterFactory();
-				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
+				switch(Math.floor((Math.random()*4))){
+					case 0:
+						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
+						break;
+					case 1:
+						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.MUSHROOM, true);
+						break;
+					case 2:
+						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.HUMAN, true);
+						break;
+					case 3:
+						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.DEVIL, true);
+						break;
+				}
 				ownBulletManager = new BulletManager(camera, ownCharacter,true, false);
 				
 				// set camera to player
@@ -218,6 +333,18 @@
 					bulletManagers[playerID].update(characters,ownCharacter,playerID);
 					
 					//alert(playerID);
+				}
+
+				switch(mapType){
+					case 0:
+						cameraBack.position.x = camera.position.x/15;
+						break;
+					case 1:
+						cameraBack.position.x = camera.position.x/10;
+						break;
+					case 2:
+						cameraBack.position.x = camera.position.x/15;
+						break;
 				}
 			}
 

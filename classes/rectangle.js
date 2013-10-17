@@ -55,9 +55,9 @@ function Rectangle(stage, x, y, width, height){
 		if(DEBUGMODE) debugSprite.width += width;
 
 	}
-        this.destroy = function(){
-            stage.removeChild(debugSprite);
-        }
+    this.destroy = function(){
+    	if(DEBUGMODE) stage.removeChild(debugSprite);
+    }
 }
 
 // For node.js require

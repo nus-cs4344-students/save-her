@@ -112,6 +112,8 @@
         </struct>
         <key>dataFileName</key>
         <filename>../PIXI/SpriteSheet2.json</filename>
+        <key>multiPack</key>
+        <false/>
         <key>mainExtension</key>
         <string></string>
         <key>forceIdenticalLayout</key>
@@ -146,22 +148,6 @@
         </struct>
         <key>fileList</key>
         <array>
-            <filename>agent_01.png</filename>
-            <filename>agent_02.gif</filename>
-            <filename>agent_03.gif</filename>
-            <filename>agent_04.gif</filename>
-            <filename>agent_05.gif</filename>
-            <filename>agent_06.gif</filename>
-            <filename>agent_07.gif</filename>
-            <filename>agent_08.gif</filename>
-            <filename>babydevil_01.png</filename>
-            <filename>babydevil_02.gif</filename>
-            <filename>babydevil_03.gif</filename>
-            <filename>babydevil_04.gif</filename>
-            <filename>babydevil_05.gif</filename>
-            <filename>babydevil_06.gif</filename>
-            <filename>babydevil_07.gif</filename>
-            <filename>babydevil_08.gif</filename>
             <filename>mushroom_01.png</filename>
             <filename>mushroom_02.png</filename>
             <filename>mushroom_03.png</filename>
@@ -182,6 +168,111 @@
             <filename>pumpkinman_hurt01.gif</filename>
             <filename>pumpkinman_hurt02.gif</filename>
             <filename>pumpkinman_hurt03.gif</filename>
+            <filename>pumpkinmanstop0002.png</filename>
+            <filename>pumpkinmanstop0003.png</filename>
+            <filename>pumpkinmanstop0004.png</filename>
+            <filename>pumpkinmanwalk0000.png</filename>
+            <filename>pumpkinmanwalk0001.png</filename>
+            <filename>pumpkinmanwalk0002.png</filename>
+            <filename>pumpkinmanwalk0003.png</filename>
+            <filename>pumpkinmanwalk0004.png</filename>
+            <filename>pumpkinmanwalk0005.png</filename>
+            <filename>pumpkinmanwalk0006.png</filename>
+            <filename>pumpkinmanwalk0007.png</filename>
+            <filename>pumpkinmanwalk0008.png</filename>
+            <filename>bullet.png</filename>
+            <filename>firelight.png</filename>
+            <filename>pumpkinmanstop0000.png</filename>
+            <filename>pumpkinmanstop0001.png</filename>
+            <filename>hitFX.png</filename>
+            <filename>bulletExplode5.png</filename>
+            <filename>bulletExplode2.png</filename>
+            <filename>bulletExplode4.png</filename>
+            <filename>bulletExplode3.png</filename>
+            <filename>bulletExplode1.png</filename>
+            <filename>helloBackdrop.png</filename>
+            <filename>helloTile.png</filename>
+            <filename>helloTileInner.png</filename>
+            <filename>helloTileTop.png</filename>
+            <filename>pixelbackdrop.png</filename>
+            <filename>pixelGradient.png</filename>
+            <filename>pixelTile.png</filename>
+            <filename>pixelTileInner.png</filename>
+            <filename>pixelTileTop.png</filename>
+            <filename>sea.png</filename>
+            <filename>graveyardTile.png</filename>
+            <filename>graveyardTileInner.png</filename>
+            <filename>graveyardTileTop.png</filename>
+            <filename>mushroom edit0001.png</filename>
+            <filename>mushroom edit0002.png</filename>
+            <filename>mushroom edit0003.png</filename>
+            <filename>mushroom edit0000.png</filename>
+            <filename>mushroomDeath0001.png</filename>
+            <filename>mushroomDeath0002.png</filename>
+            <filename>mushroomDeath0003.png</filename>
+            <filename>mushroomDeath0004.png</filename>
+            <filename>mushroomDeath0005.png</filename>
+            <filename>mushroomDeath0006.png</filename>
+            <filename>mushroomDeath0007.png</filename>
+            <filename>mushroomDeath0000.png</filename>
+            <filename>mushroomHurt01.png</filename>
+            <filename>mushroomHurt02.png</filename>
+            <filename>mushroomHurt03.png</filename>
+            <filename>agent20006_walk.png</filename>
+            <filename>agent20007_die.png</filename>
+            <filename>agent20007_walk.png</filename>
+            <filename>agent20008_die.png</filename>
+            <filename>agent20008_walk.png</filename>
+            <filename>agent20009_die.png</filename>
+            <filename>agent2_stop0000.png</filename>
+            <filename>agent2_stop0001.png</filename>
+            <filename>agent2_stop0002.png</filename>
+            <filename>agent2_stop0003.png</filename>
+            <filename>agent20000_hurt.png</filename>
+            <filename>agent20000_walk.png</filename>
+            <filename>agent20001_die.png</filename>
+            <filename>agent20001_hurt.png</filename>
+            <filename>agent20001_walk.png</filename>
+            <filename>agent20002_die.png</filename>
+            <filename>agent20002_hurt.png</filename>
+            <filename>agent20002_walk.png</filename>
+            <filename>agent20003_die.png</filename>
+            <filename>agent20003_walk.png</filename>
+            <filename>agent20004_die.png</filename>
+            <filename>agent20004_walk.png</filename>
+            <filename>agent20005_die.png</filename>
+            <filename>agent20005_walk.png</filename>
+            <filename>agent20006_die.png</filename>
+            <filename>babydevil2_walk0004.png</filename>
+            <filename>babydevil2_walk0005.png</filename>
+            <filename>babydevil2_walk0006.png</filename>
+            <filename>babydevil2_walk0007.png</filename>
+            <filename>babydevil2_walk0000.png</filename>
+            <filename>babydevil2_walk0001.png</filename>
+            <filename>babydevil2_walk0002.png</filename>
+            <filename>babydevil2_walk0003.png</filename>
+            <filename>babydevil2_die0003.png</filename>
+            <filename>babydevil2_die0004.png</filename>
+            <filename>babydevil2_die0005.png</filename>
+            <filename>babydevil2_die0006.png</filename>
+            <filename>babydevil2_die0007.png</filename>
+            <filename>babydevil2_die0008.png</filename>
+            <filename>babydevil2_die0009.png</filename>
+            <filename>babydevil2_die0010.png</filename>
+            <filename>babydevil2_die0011.png</filename>
+            <filename>babydevil2_hurt0000.png</filename>
+            <filename>babydevil2_hurt0001.png</filename>
+            <filename>babydevil2_hurt0002.png</filename>
+            <filename>babydevil2_stop0000.png</filename>
+            <filename>babydevil2_stop0001.png</filename>
+            <filename>babydevil2_stop0002.png</filename>
+            <filename>babydevil2_stop0003.png</filename>
+            <filename>babydevil2_stop0004.png</filename>
+            <filename>babydevil2_die0000.png</filename>
+            <filename>babydevil2_die0001.png</filename>
+            <filename>babydevil2_die0002.png</filename>
+            <filename>moon.png</filename>
+            <filename>grave.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

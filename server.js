@@ -6,6 +6,7 @@ require(lib_path + "bullet.js");
 require(lib_path + "bulletManager.js");
 require(lib_path + "characterFactory.js");
 require(lib_path + "constantsServer.js");
+require(lib_path + "particleManager.js");
 require(lib_path + "rectangle.js");
 require(lib_path + "utility.js");
 

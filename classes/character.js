@@ -7,6 +7,7 @@ function Character(){
 	this.maxLives = 5;
 	this.HP = this.maxHP;
 	this.lives = this.maxLives;
+	this.characterType;
 
 	// private attributes
 	var that = this;
@@ -36,6 +37,8 @@ function Character(){
 	var speedX = 0;
 	var speedY = 0;
 
+	var faceRight = true;	// whether character is facing right
+
 	// other players only, interpolating gradually to desired pos
 	var interpolatePosX = posX;
 	var interpolatePosY = posY;
@@ -45,7 +48,7 @@ function Character(){
 	var stopInput = false;
 
 	// client only - initialise all objects for render
-	this.init = function(stageArg, stopTexturesArg, walkTexturesArg, jumpTexturesArg, dieTexturesArg, hurtTexturesArg){
+	this.init = function(stageArg, stopTexturesArg, walkTexturesArg, jumpTexturesArg, dieTexturesArg, hurtTexturesArg, typeArg){
 		if(!ISSERVER){
 			stage = stageArg;
 			stopTextures = stopTexturesArg;
@@ -57,13 +60,18 @@ function Character(){
 			spriteMovieClip = new PIXI.MovieClip(stopTextures);
 			spriteMovieClip.scale.x = spriteMovieClip.scale.y = 2;
 			spriteMovieClip.position.x = posX;
-			spriteMovieClip.position.y = posY;
+			if(typeArg == CHARACTERTYPE.DEVIL)
+				spriteMovieClip.position.y = posY + 5;
+			else
+				spriteMovieClip.position.y = posY;
 			spriteMovieClip.anchor.x = 0.5;
 			spriteMovieClip.anchor.y = 0.5;
 			setAnimation("Walk");
 			spriteMovieClip.play();
 			stage.addChild(spriteMovieClip);
 		}
+
+		that.characterType = typeArg;
 	}
 
 	this.initDetectors = function(){
@@ -128,10 +136,13 @@ function Character(){
 			}
 
 			if(!ISSERVER && !inAir){
-				if(deltaX > 0)
+				if(deltaX > 0){
 					spriteMovieClip.scale.x = 2;
-				else
+					faceRight = true;
+				}else{
 					spriteMovieClip.scale.x = -2;
+					faceRight = false;
+				}
 			}
 		}
 
@@ -205,7 +216,7 @@ function Character(){
 
 			case "Hurt":
 				spriteMovieClip.textures = hurtTextures;
-				spriteMovieClip.animationSpeed = 0.9;
+				spriteMovieClip.animationSpeed = 0.5;
 				spriteMovieClip.onComplete = uninterruptedAnimationResume;
 				break;
 		}
@@ -325,7 +336,7 @@ function Character(){
 		if(!ISSERVER && isMine && !stopInput){
 			// check if going to jump
 			var keys = KeyboardJS.activeKeys();
-			if(containsArray(keys, 'z'))	// player wants to jump!
+			if(containsArray(keys, 'space'))	// player wants to jump!
 				that.jump();
 			
 		}
@@ -411,10 +422,13 @@ function Character(){
 				setAnimationBasedOnSpeed(deltaX);
 
 				if(!inAir && deltaX != 0){
-					if(deltaX > 0)
+					if(deltaX > 0){
 						spriteMovieClip.scale.x = 2;
-					else
+						faceRight = true;
+					} else {
 						spriteMovieClip.scale.x = -2;
+						faceRight = false;
+					}
 				}
 			}
 		}
@@ -461,7 +475,8 @@ function Character(){
 		// flashing effect
                 if (!ISSERVER)
 		var flashEffect = setInterval(function(){
-			spriteMovieClip.visible = !spriteMovieClip.visible;
+			if(invincible)
+				spriteMovieClip.visible = !spriteMovieClip.visible;
 		}, 100);
 
 		// remove invincible after a while
@@ -489,6 +504,10 @@ function Character(){
 	// return if collided with rectangle
 	this.isColliding = function(rectangle){
 		return (bodyDetector.isIntersecting(rectangle));
+	}
+
+	this.isFacingRight = function(){
+		return faceRight;
 	}
 
 }
