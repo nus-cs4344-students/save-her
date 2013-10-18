@@ -273,6 +273,23 @@
             <filename>babydevil2_die0002.png</filename>
             <filename>moon.png</filename>
             <filename>grave.png</filename>
+            <filename>herHumanStop0001.png</filename>
+            <filename>herHumanStop0003.png</filename>
+            <filename>herHumanStop0000.png</filename>
+            <filename>savemebubble.png</filename>
+            <filename>herHumanStop0002.png</filename>
+            <filename>herPumpkin0003.png</filename>
+            <filename>herDevil0000.png</filename>
+            <filename>herDevil0001.png</filename>
+            <filename>herDevil0002.png</filename>
+            <filename>herDevil0003.png</filename>
+            <filename>herMushroom0000.png</filename>
+            <filename>herMushroom0001.png</filename>
+            <filename>herMushroom0002.png</filename>
+            <filename>herMushroom0003.png</filename>
+            <filename>herPumpkin0000.png</filename>
+            <filename>herPumpkin0001.png</filename>
+            <filename>herPumpkin0002.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

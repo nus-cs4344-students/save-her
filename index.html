@@ -174,6 +174,7 @@
 				}
 
 				// generate map
+				var her; var herBubble; var herPositionX; var herPositionY;
 				for(var i=0; i<map.length; i++){
 
 					var prev = 0;
@@ -220,30 +221,77 @@
 									mapRects.push(prevRect);
 								}
 								break;
+
+							case 3:
+								herPositionX = j*TILEHEIGHT;
+								herPositionY = i*TILEHEIGHT;
+								/*var herTextures = [];
+								for(var k=0; k<4; k++)
+								 	herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
+								her = new PIXI.MovieClip(herTextures);
+								her.position.x = j*TILEWIDTH;
+								her.position.y = i*TILEHEIGHT;
+								her.width = TILEWIDTH;
+								her.height = TILEHEIGHT;
+								her.animationSpeed = 0.1;
+								her.play();
+								*/
+								var herBubble = new PIXI.Sprite(PIXI.Texture.fromFrame("savemebubble.png"));
+								herBubble.position.x = j*TILEWIDTH + 40;
+								herBubble.position.y = i*TILEHEIGHT + 8;
+								herBubble.width *=2;
+								herBubble.height *=2;
+
+								setInterval(function(){
+									herBubble.visible = !herBubble.visible;
+								}, 2000);
+
+								break;
 						}
 
 						prev = map[i][j];
 					}
-
 				}
 
 				// create OWN character
 				// @PRISCILLA - this is where your own character is created (currently type is random)
 				var characterFac = new CharacterFactory();
+				var herTextures = [];
 				switch(Math.floor((Math.random()*4))){
 					case 0:
 						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
+						for(var k=0; k<4; k++)
+							herTextures.push(PIXI.Texture.fromFrame("herPumpkin000" + k + ".png"));
 						break;
 					case 1:
 						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.MUSHROOM, true);
+						for(var k=0; k<4; k++)
+							herTextures.push(PIXI.Texture.fromFrame("herMushroom000" + k + ".png"));
 						break;
 					case 2:
 						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.HUMAN, true);
+						for(var k=0; k<4; k++)
+							herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
 						break;
 					case 3:
 						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.DEVIL, true);
+						for(var k=0; k<4; k++)
+							herTextures.push(PIXI.Texture.fromFrame("herDevil000" + k + ".png"));
 						break;
 				}
+
+				// initialise her
+				her = new PIXI.MovieClip(herTextures);
+				her.position.x = herPositionX;
+				her.position.y = herPositionY;
+				her.width = TILEWIDTH;
+				her.height = TILEHEIGHT;
+				her.animationSpeed = 0.1;
+				her.play();
+				camera.addChild(her);
+				camera.addChild(herBubble);
+
+				// initialise bullet manager
 				ownBulletManager = new BulletManager(camera, ownCharacter,true, false);
 				
 				// set camera to player
