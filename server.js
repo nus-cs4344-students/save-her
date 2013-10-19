@@ -61,60 +61,62 @@ function Server() {
     var counter = 0;
 
     serverSocket.on("connection", function(socket) {
+		try{
+			// send current players to the new player
+			for (var id in sockets)
+				unicast(socket, {type: "newPlayer", playerID: id, characterType: CHARACTERTYPE.PUMPKIN})
 
-        // send current players to the new player
-        for (var id in sockets)
-            unicast(socket, {type: "newPlayer", playerID: id, characterType: CHARACTERTYPE.PUMPKIN})
+			sockets[socket.id] = socket;
+			players[socket.id] = characterFac.createCharacter(null, CHARACTERTYPE.PUMPKIN, false);
+			bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
+			// broadcast current players with the new player
+			broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: CHARACTERTYPE.PUMPKIN})
 
-        sockets[socket.id] = socket;
-        players[socket.id] = characterFac.createCharacter(null, CHARACTERTYPE.PUMPKIN, false);
-        bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
-        // broadcast current players with the new player
-        broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: CHARACTERTYPE.PUMPKIN})
+			// on receiving something from client
+			socket.on("data", function(e) {
+				console.log(e);
 
-        // on receiving something from client
-        socket.on("data", function(e) {
-            console.log(e);
+				var broadcast = false;
+				var message = JSON.parse(e);
+				switch (message.type) {
+					case "posForce":
+						var player = players[socket.id];
+						players[socket.id].interpolateTo(message.x, message.y);
+						broadcast = true;
+						break;
+					case "pos":
+						var player = players[socket.id];
+						var diffX = Math.abs(player.getPosX() - message.x);
+						var diffY = Math.abs(player.getPosY() - message.y);
+						if (diffX > 200 || diffY > 200) {
+							players[socket.id].interpolateTo(message.x, message.y);
+							broadcast = true;
+						}
+						break;
+					case "jump":
+						players[socket.id].jump();
+						broadcast = true;
+						break;
+					case "speedX":
+						players[socket.id].setSpeedX(message.x);
+						broadcast = true;
+						break;
+					case "shoot":
+						bulletManagers[socket.id].setDir(message.dir);
+						bulletManagers[socket.id].shoot();
+						broadcast = true;
+						break;
+				}
 
-            var broadcast = false;
-            var message = JSON.parse(e);
-            switch (message.type) {
-                case "posForce":
-                    var player = players[socket.id];
-                    players[socket.id].interpolateTo(message.x, message.y);
-                    broadcast = true;
-                    break;
-                case "pos":
-                    var player = players[socket.id];
-                    var diffX = Math.abs(player.getPosX() - message.x);
-                    var diffY = Math.abs(player.getPosY() - message.y);
-                    if (diffX > 200 || diffY > 200) {
-                        players[socket.id].interpolateTo(message.x, message.y);
-                        broadcast = true;
-                    }
-                    break;
-                case "jump":
-                    players[socket.id].jump();
-                    broadcast = true;
-                    break;
-                case "speedX":
-                    players[socket.id].setSpeedX(message.x);
-                    broadcast = true;
-                    break;
-                case "shoot":
-                    bulletManagers[socket.id].setDir(message.dir);
-                    bulletManagers[socket.id].shoot();
-                    broadcast = true;
-                    break;
-            }
+				var id;
 
-            var id;
-
-            // broadcast to all other players
-            if (broadcast)
-                broadcastRestWithPlayerID(socket, message);
-        });
-
+				// broadcast to all other players
+				if (broadcast)
+					broadcastRestWithPlayerID(socket, message);
+			});
+		} catch (e){
+            console.log("Error: " + e);
+		}
     });
 
     var application = express();

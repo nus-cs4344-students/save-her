@@ -1,5 +1,7 @@
 "use strict;"
 
+var session;
+var player_char;
 var ownCharacter;		// own player's character
 var characters = [];	// other players' character
 
@@ -12,8 +14,11 @@ var cameraBack;
 
 var mapType = Math.floor((Math.random()*3));	// 0:graveyard, 1:pixel, 2:happy
 
-function Game(){
-
+function Game(s,c){
+	
+	session = s;
+	player_char = c;
+	
 	// initialise sounds and music
 	//initSounds();
 
@@ -221,26 +226,26 @@ function Game(){
 		}
 
 		// create OWN character
-		// @PRISCILLA - this is where your own character is created (currently type is random)
+		// character is created based on player's selection
 		var characterFac = new CharacterFactory();
 		var herTextures = [];
-		switch(Math.floor((Math.random()*4))){
-			case 0:
+		switch(player_char){
+			case "pompkin":
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herPumpkin000" + k + ".png"));
 				break;
-			case 1:
+			case "shroom":
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.MUSHROOM, true);
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herMushroom000" + k + ".png"));
 				break;
-			case 2:
+			case "human":
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.HUMAN, true);
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
 				break;
-			case 3:
+			case "devilz":
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.DEVIL, true);
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herDevil000" + k + ".png"));
@@ -265,9 +270,12 @@ function Game(){
 		camera.position.x = ownCharacter.getSprite().position.x + 200;
 		camera.position.y = ownCharacter.getSprite().position.y + 100;
 
-		// networking
+		// networking		
+		console.log("socket to server check");
 		socket = new SockJS("http://localhost:4000/game");	// set as global variable in constants.js
+		
 		socket.onopen = function() {
+			console.log("socket to server ready");
 			socketReady = true;
 		}
 

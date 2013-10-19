@@ -57,7 +57,7 @@ function Lobby(){
 					case "new_player":
 						playerID = message.playerID;
 						setCookie("player",playerID,1);
-						console.log(playerName + " " + playerID);
+						//console.log(playerName + " " + playerID);
 						break;
 					case "relog_player":	
 						player = message.player;
@@ -65,17 +65,17 @@ function Lobby(){
 						character = message.character;
 						avatar = message.avatar;
 						session = message.session;
-						console.log("received relog_player "+player+" "+playerName+" "+character+" "+avatar+" "+session);
+						//console.log("received relog_player "+player+" "+playerName+" "+character+" "+avatar+" "+session);
 						showMainLobby();
 						break;
 					case "join_game":
-						console.log("joining game...");
+						//console.log("joining game...");
 						$(stage.canvas).fadeOut();
 						connectGame();
 						break;
 					case "new_game":
 						session = message.sessionID;
-						console.log("received new_game from server, sessionID = #" + session);
+						//console.log("received new_game from server, sessionID = #" + session);
 						$(stage.canvas).fadeOut();
 						connectGame();
 						break;
@@ -194,7 +194,7 @@ function Lobby(){
 				character = "devilz";
 				avatar = "images/devilz.gif";
 				sendToServer({type:"set_char", playerID:playerID,character:character}); 
-				console.log("selected devilz");
+				//console.log("selected devilz");
 				showMainLobby();
 			}]);
 			var shroom = new zebra.ui.ImagePan("images/shroom.gif",zebra.ui.MouseListener,[function mouseClicked(e){
@@ -202,7 +202,7 @@ function Lobby(){
 				character = "shroom";			
 				avatar = "images/shroom.gif";
 				sendToServer({type:"set_char", playerID:playerID,character:character}); 
-				console.log("selected shroom");
+				//console.log("selected shroom");
 				showMainLobby();
 			}]);
 			var pompkin = new zebra.ui.ImagePan("images/pompkin.gif",zebra.ui.MouseListener,[function mouseClicked(e){
@@ -210,7 +210,7 @@ function Lobby(){
 				character = "pompkin";			
 				avatar = "images/pompkin.gif";
 				sendToServer({type:"set_char", playerID:playerID,character:character}); 
-				console.log("selected pompkin");
+				//console.log("selected pompkin");
 				showMainLobby();
 			}]);
 			var human = new zebra.ui.ImagePan("images/human.gif",zebra.ui.MouseListener,[function mouseClicked(e){
@@ -218,7 +218,7 @@ function Lobby(){
 				character = "human";		
 				avatar = "images/human.gif";		
 				sendToServer({type:"set_char", playerID:playerID,character:character}); 
-				console.log("selected human");
+				//console.log("selected human");
 				showMainLobby();
 			}]);
 			charSelect.add(zebra.layout.CENTER,pompkin);
@@ -282,12 +282,12 @@ function Lobby(){
 		setInterval(function(){
 			if (sessionCount != count){
 				count = sessionCount;
-				console.log("removing..");
+				//console.log("removing..");
 				subLobby.removeAll();
 				var yposition = 100;
 				for(var i = 0; i < allSessions.length; i++){
 					if (allSessions[i]!= undefined){
-						console.log("displaying.." + allSessions[i].sessionID);
+						//console.log("displaying.." + allSessions[i].sessionID);
 						var id = allSessions[i].sessionID;
 						if (allSessions[i].sessionID == session){
 							var s = new zebra.ui.Label(new zebra.data.Text(id.toString()),
@@ -297,7 +297,7 @@ function Lobby(){
 								loading.setVisible(true);
 								clearInterval(checkSessions);
 								session = this.getValue();
-								console.log("rejoin session #" + session);
+								//console.log("rejoin session #" + session);
 								sendToServer({type:"join_game", playerID:playerID, sessionID:session}); 
 							}]);
 							var s2 = new zebra.ui.Label("Last Played: Map " + allSessions[i].map + " (" + allSessions[i].numPlayers + " Players)");
@@ -310,7 +310,7 @@ function Lobby(){
 								loading.setVisible(true);
 								clearInterval(checkSessions);
 								session = this.getValue();
-								console.log("join session #" + session);
+								//console.log("join session #" + session);
 								sendToServer({type:"join_game", playerID:playerID, sessionID:session}); 
 							}]);
 							var s2 = new zebra.ui.Label("Map " + allSessions[i].map + " (" + allSessions[i].numPlayers + " Players)");
@@ -331,7 +331,7 @@ function Lobby(){
 		var newGameButton =  new zebra.ui.Button("Create New Game",zebra.ui.MouseListener,[function mouseClicked(e){
 			mainLobby.setVisible(false);	
 			subLobby.setVisible(false);
-			console.log("new session");
+			//console.log("new session");
 			clearInterval(checkSessions);
 			showSelectMap();
 		}]);
@@ -358,7 +358,7 @@ function Lobby(){
 			selectMap.setVisible(false);
 			loading.setVisible(true);
 			map = 1;
-			console.log("selected map 1");
+			//console.log("selected map 1");
 			newGame();
 		}, function mouseEntered(e){
 			hoverC0.setVisible(false);
@@ -371,7 +371,7 @@ function Lobby(){
 			selectMap.setVisible(false);
 			loading.setVisible(true);
 			map = 2;
-			console.log("selected map 2");
+			//console.log("selected map 2");
 			newGame();
 		}, function mouseEntered(e){
 			hoverC0.setVisible(false);
@@ -384,7 +384,7 @@ function Lobby(){
 			selectMap.setVisible(false);
 			loading.setVisible(true);
 			map = 3;
-			console.log("selected map 3");
+			//console.log("selected map 3");
 			newGame();
 		}, function mouseEntered(e){
 			hoverC0.setVisible(false);
@@ -418,8 +418,7 @@ function Lobby(){
      */
 	
 	var connectGame = function(){
-		
-		var game = new Game();
+		var game = new Game(session,character);
 	
 	}
 	

@@ -162,10 +162,6 @@ function loginServer(){
 						case "get_all_sessions":
 							unicast(playerSockets[message.playerID],{type:"get_all_sessions",allSessions:sm.getAllSessions()});
 							break;
-						default:							
-							//handling messages directed to the child server
-							sessionChild[message.sessionID].send('server',serverSocket);
-							break;
 					}
 				});	
 			});
