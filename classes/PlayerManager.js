@@ -23,13 +23,6 @@ function PlayerManager(){
 	
 	}
 	
-	this.setMap = function(playerID,map){
-		
-		var session = sm.addSession(playerID);
-		players[playerID].setMap(map,session);
-		
-	}	
-	
 	this.setSession = function(playerID,s){
 	
 		players[playerID].setSession(s);
@@ -54,14 +47,20 @@ function PlayerManager(){
 	
 	}
 	
-	this.getPlayerById = function(playerID){
+	this.getPlayerName = function(playerID){
 		
-		if (players[playerID] == null){
+		if (players[playerID] == undefined){
 			return null;
 		}
 		return players[playerID].getName();
 	
 	}	
+	
+	this.getPlayer = function(playerID){
+	
+		return players[playerID];
+	
+	}
 	
 	this.getAllPlayers = function(){
 		

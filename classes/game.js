@@ -1,25 +1,24 @@
 "use strict;"
 
-var session;
-
 var ownCharacter;		// own player's character
 var characters = [];	// other players' character
 
-var myBulletManager;	// bullet manager
+var ownBulletManager;	// bullet manager
+var bulletManagers = [];
 var mapRects = [];		// collision rectangles for map
 
-function Game(sessionID){
-	
-	//need to send sessionID everytime send messages to server so that
-	//the updates get to the correct game session
-	session = sessionID;
+var camera;
+var cameraBack;
+
+var mapType = Math.floor((Math.random()*3));	// 0:graveyard, 1:pixel, 2:happy
+
+function Game(){
 
 	// initialise sounds and music
 	//initSounds();
-	//playSound(gameMusic, true);
-	
+
 	// load all art assets
-	var assetsToLoader = [ "PIXI/SpriteSheet.json", "PIXI/SpriteSheet2.json", "PIXI/PixelFont.fnt"];
+	var assetsToLoader = [ "PIXI/SpriteSheet2.json", "PIXI/PixelFont.fnt"];
 	loader = new PIXI.AssetLoader(assetsToLoader);
 	loader.onComplete = start;
 	loader.load();
@@ -41,8 +40,13 @@ function Game(sessionID){
 		initGameGUI(stage);
 
 		// initialise game camera
-		var camera = new PIXI.DisplayObjectContainer();
+		cameraBack = new PIXI.DisplayObjectContainer();
+		stage.addChild(cameraBack);
+		camera = new PIXI.DisplayObjectContainer();
 		stage.addChild(camera);
+
+		// initialise FX
+		initFX(camera);
 
 		// start animating
 		requestAnimFrame( animate );
@@ -50,59 +54,212 @@ function Game(sessionID){
 		// start updating
 		setInterval(update, FRAMEDURATION);
 
-		// render backdrop
-		var moonTexture = PIXI.Texture.fromImage("moon.png");
-		var moon = new PIXI.Sprite(moonTexture);
-		moon.position.x = 300;
-		moon.position.y = 0;
-		moon.width = moon.width*2;
-		moon.height = moon.height*2;
-		backGUI.addChild(moon);
+		var tileTexture;
+		var tileTopTexture;
+		var tileBottomTexture;
 
-		for(var i=0; i<2; i++){
-			var graveTexture = PIXI.Texture.fromImage("grave.png");
-			var grave = new PIXI.Sprite(graveTexture);
-			grave.position.x = i*graveTexture.width*2;
-			grave.position.y = 0;
-			grave.width = grave.width*2;
-			grave.height = grave.height*2;
-			backGUI.addChild(grave);
+		// render backdrop
+		switch(mapType){
+
+			// graveyard level
+			case 0:
+				playSound(gameMusic, true);
+
+				var moonTexture = PIXI.Texture.fromImage("moon.png");
+				var moon = new PIXI.Sprite(moonTexture);
+				moon.position.x = 300;
+				moon.position.y = 150;
+				moon.width = moon.width*2;
+				moon.height = moon.height*2;
+				backGUI.addChild(moon);
+
+				for(var i=0; i<2; i++){
+					var graveTexture = PIXI.Texture.fromImage("grave.png");
+					var grave = new PIXI.Sprite(graveTexture);
+					grave.position.x = i*graveTexture.width*2;
+					grave.position.y = 150;
+					grave.width = grave.width*2;
+					grave.height = grave.height*2;
+					cameraBack.addChild(grave);
+				}
+
+				tileTexture = PIXI.Texture.fromImage("graveyardTile.png");
+				tileTopTexture = PIXI.Texture.fromImage("graveyardTileTop.png");
+				tileBottomTexture = PIXI.Texture.fromImage("graveyardTileInner.png");
+				break;
+
+			// pixel level
+			case 1:
+				playSound(gameMusic3, true);
+
+				var gradientTexture = PIXI.Texture.fromImage("pixelGradient.png");
+				var gradient = new PIXI.Sprite(gradientTexture);
+				gradient.position.x = -50;
+				gradient.position.y = 0;
+				gradient.width = gradient.width*2;
+				gradient.height = gradient.height*2;
+				cameraBack.addChild(gradient);
+
+				var pixelbackTexture = PIXI.Texture.fromImage("pixelbackdrop.png");
+				var pixelback = new PIXI.Sprite(pixelbackTexture);
+				pixelback.position.x = -50;
+				pixelback.position.y = 0;
+				pixelback.width = pixelback.width*2;
+				pixelback.height = pixelback.height*2;
+				pixelback.alpha = 0.6;
+				cameraBack.addChild(pixelback);
+
+				tileTexture = PIXI.Texture.fromImage("pixelTile.png");
+				tileTopTexture = PIXI.Texture.fromImage("pixelTileTop.png");
+				tileBottomTexture = PIXI.Texture.fromImage("pixelTileInner.png");
+				break;
+
+			// happy level
+			case 2:
+				playSound(gameMusic2, true);
+
+				var hellobackTexture = PIXI.Texture.fromImage("helloBackdrop.png");
+				var helloback = new PIXI.Sprite(hellobackTexture);
+				helloback.position.x = -50;
+				helloback.position.y = 0;
+				helloback.width = helloback.width*2;
+				helloback.height = helloback.height*2;
+				cameraBack.addChild(helloback);
+
+				var seaTexture = PIXI.Texture.fromImage("sea.png");
+				var sea = new PIXI.Sprite(seaTexture);
+				sea.position.x = -50;
+				sea.position.y = 500;
+				sea.width = sea.width*2;
+				sea.height = sea.height*2;
+				cameraBack.addChild(sea);
+
+				tileTexture = PIXI.Texture.fromImage("helloTile.png");
+				tileTopTexture = PIXI.Texture.fromImage("helloTileTop.png");
+				tileBottomTexture = PIXI.Texture.fromImage("helloTileInner.png");
+				break;
 		}
 
 		// generate map
-		var tileTexture = PIXI.Texture.fromImage("tile.png");
+		var her; var herBubble; var herPositionX; var herPositionY;
 		for(var i=0; i<map.length; i++){
 
 			var prev = 0;
 			var prevRect;
 
 			for(var j=0; j<map[i].length; j++){
-				if(map[i][j] == 1){
-					
-					var tile = new PIXI.Sprite(tileTexture);
-					tile.position.x = j*TILEWIDTH;
-					tile.position.y = i*TILEHEIGHT;
-					tile.width = TILEWIDTH+1;
-					tile.height = TILEHEIGHT;
-					camera.addChild(tile);
+				switch(map[i][j]){
 
-					if(prev == 1)
-						prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
-					else{
-						prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
-						mapRects.push(prevRect);
-					}
+					case 1:
+						var tile = new PIXI.Sprite(tileTexture);
+						tile.position.x = j*TILEWIDTH;
+						tile.position.y = i*TILEHEIGHT;
+						tile.width = TILEWIDTH+1;
+						tile.height = TILEHEIGHT;
+						camera.addChild(tile);
+
+						if(prev == 1 || prev == 2)
+							prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
+						else{
+							prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+							mapRects.push(prevRect);
+						}
+
+						var tileTop = new PIXI.Sprite(tileTopTexture);
+						tileTop.position.x = j*TILEWIDTH;
+						tileTop.position.y = i*TILEHEIGHT-TILEHEIGHT+1;
+						tileTop.width = TILEWIDTH+1;
+						tileTop.height = TILEHEIGHT;
+						camera.addChild(tileTop);
+						break;
+
+					case 2:
+						var tile = new PIXI.Sprite(tileBottomTexture);
+						tile.position.x = j*TILEWIDTH;
+						tile.position.y = i*TILEHEIGHT-1;
+						tile.width = TILEWIDTH+1;
+						tile.height = TILEHEIGHT+1;
+						camera.addChild(tile);
+
+						if(prev == 1 || prev == 2)
+							prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
+						else{
+							prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+							mapRects.push(prevRect);
+						}
+						break;
+
+					case 3:
+						herPositionX = j*TILEHEIGHT;
+						herPositionY = i*TILEHEIGHT;
+						/*var herTextures = [];
+						for(var k=0; k<4; k++)
+							herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
+						her = new PIXI.MovieClip(herTextures);
+						her.position.x = j*TILEWIDTH;
+						her.position.y = i*TILEHEIGHT;
+						her.width = TILEWIDTH;
+						her.height = TILEHEIGHT;
+						her.animationSpeed = 0.1;
+						her.play();
+						*/
+						var herBubble = new PIXI.Sprite(PIXI.Texture.fromFrame("savemebubble.png"));
+						herBubble.position.x = j*TILEWIDTH + 40;
+						herBubble.position.y = i*TILEHEIGHT + 8;
+						herBubble.width *=2;
+						herBubble.height *=2;
+
+						setInterval(function(){
+							herBubble.visible = !herBubble.visible;
+						}, 2000);
+
+						break;
 				}
+
 				prev = map[i][j];
 			}
-
 		}
 
 		// create OWN character
-		// @PRISCILLA - this is where your own character is created
+		// @PRISCILLA - this is where your own character is created (currently type is random)
 		var characterFac = new CharacterFactory();
-		ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
-		myBulletManager = new bulletManager(camera, ownCharacter);
+		var herTextures = [];
+		switch(Math.floor((Math.random()*4))){
+			case 0:
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
+				for(var k=0; k<4; k++)
+					herTextures.push(PIXI.Texture.fromFrame("herPumpkin000" + k + ".png"));
+				break;
+			case 1:
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.MUSHROOM, true);
+				for(var k=0; k<4; k++)
+					herTextures.push(PIXI.Texture.fromFrame("herMushroom000" + k + ".png"));
+				break;
+			case 2:
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.HUMAN, true);
+				for(var k=0; k<4; k++)
+					herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
+				break;
+			case 3:
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.DEVIL, true);
+				for(var k=0; k<4; k++)
+					herTextures.push(PIXI.Texture.fromFrame("herDevil000" + k + ".png"));
+				break;
+		}
+
+		// initialise her
+		her = new PIXI.MovieClip(herTextures);
+		her.position.x = herPositionX;
+		her.position.y = herPositionY;
+		her.width = TILEWIDTH;
+		her.height = TILEHEIGHT;
+		her.animationSpeed = 0.1;
+		her.play();
+		camera.addChild(her);
+		camera.addChild(herBubble);
+
+		// initialise bullet manager
+		ownBulletManager = new BulletManager(camera, ownCharacter,true, false);
 		
 		// set camera to player
 		camera.position.x = ownCharacter.getSprite().position.x + 200;
@@ -128,6 +285,7 @@ function Game(sessionID){
 				// playerID corresponds to the socket id of the player
 				case "newPlayer":
 					characters[message.playerID] = characterFac.createCharacter(camera, message.characterType, false);
+					bulletManagers[message.playerID] = new BulletManager(camera,characters[message.playerID],false, false);
 					addPlayerGUI(stage);
 					break;
 
@@ -144,6 +302,17 @@ function Game(sessionID){
 				// change velocity in horizontal component
 				case "speedX":
 					characters[message.playerID].setSpeedX(message.x);
+					break;
+				case "shoot":
+					bulletManagers[message.playerID].setDir(message.dir);
+					bulletManagers[message.playerID].shoot();
+					break;
+				case "hurt":
+					if(typeof(characters[message.p2])!="undefined")
+						characters[message.p2].hurt(message.dmg);
+					else
+						ownCharacter.hurt(message.dmg);
+					break;
 			}
 
 		}
@@ -156,6 +325,7 @@ function Game(sessionID){
 	}
 
 	// game loop
+
 	function update() {
 		
 		// update characters
@@ -164,7 +334,7 @@ function Game(sessionID){
 			ownCharacter.update();
 			
 			// update bullets
-			myBulletManager.update();
+			ownBulletManager.update(characters,null,null);
 
 			// update UI
 			gameGUIUpdate();
@@ -173,14 +343,27 @@ function Game(sessionID){
 		// update all other characters
 		var playerID;
 		for(playerID in characters)
+		{
 			characters[playerID].update();
+			bulletManagers[playerID].update(characters,ownCharacter,playerID);
+			
+			//alert(playerID);
+		}
+
+		switch(mapType){
+			case 0:
+				cameraBack.position.x = camera.position.x/15;
+				break;
+			case 1:
+				cameraBack.position.x = camera.position.x/10;
+				break;
+			case 2:
+				cameraBack.position.x = camera.position.x/15;
+				break;
+		}
 	}
 
 }
-
-var application = new Game();
-application.start();
-
 
 // For node.js require
 global.Game = Game;

@@ -1,68 +1,59 @@
 "use strict"; 
  
 function Player(name,id){
-	var name = name;
-	var id = id;
-	var character;
-	var avatar;
-	var map;
-	var session;
+
+	var that = this;
+	this.name = name;
+	this.id = id;
+	this.character;
+	this.avatar;
+	this.session;
 	
-	character = "";
-	avatar = "";
-	map = "";
-	session = "";
+	this.character = "";
+	this.avatar = "";
 	
 	this.setChar = function(chr){
 	
-		character = chr;
+		that.character = chr;
 		if (chr == "devilz"){
-			avatar = "images/devilz.gif";
+			that.avatar = "images/devilz.gif";
 		} else if (chr == "pompkin"){
-			avatar = "images/pompkin.gif"
+			that.avatar = "images/pompkin.gif"
 		} else if (chr == "human"){
-			avatar = "images/human.gif"
+			that.avatar = "images/human.gif"
 		} else if (chr == "shroom"){
-			avatar = "images/shroom.gif"
+			that.avatar = "images/shroom.gif"
 		}
 		
 	}
-	
-	this.setMap = function(m,s){
-	
-		map = m;
-		session = s;
 		
-	}
-	
-	
 	this.setSession = function(s){
 
-		session = s;
+		that.session = s;		
 		
 	}
 	
 	this.getLastSession = function(){
 
-		return session;
+		return that.session;
 		
 	}
 	
 	this.getChar = function(){
 	
-		return character;
+		return that.character;
 		
 	}
 	
 	this.getCharAvatar = function(){
 	
-		return avatar;
+		return that.avatar;
 		
 	}
 	
 	this.getName = function(){
 	
-		return name;
+		return that.name;
 		
 	}
 }
