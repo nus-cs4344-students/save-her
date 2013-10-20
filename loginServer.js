@@ -76,15 +76,14 @@ function loginServer(){
 				socket.on('close', function () {
 					//when player disconnects, remove him from his current game session					
 					if (isExists(players[socket.id])){
-						var lastSessionID = pm.getLastSession(players[socket.id]);
-						console.log("lastSessionID = " + lastSessionID);
-						if (lastSessionID != undefined){
+						var lastSession = pm.getLastSession(players[socket.id]);
+						console.log("lastSession = " + lastSession);
+						if (lastSession != undefined){
 							//remove player from the previous session, and if 
 							//nobody else is in that session, remove it.
 							console.log("player #" + players[socket.id] + " has disconnected");
-							sm.removePlayerFromSession(lastSessionID,players[socket.id]);					
+							sm.removePlayerFromSession(lastSession.sessionID,players[socket.id]);					
 							pm.setSession(players[socket.id],undefined);
-							console.log("checking that session has been removed.." + pm.getLastSession(players[socket.id]));
 						}						
 						delete players[socket.id];
 					}				
@@ -97,6 +96,7 @@ function loginServer(){
 					switch (message.type) {
 					
 						case "new_player":
+							console.log("new players");
 							var playerID = pm.addPlayer(message.player);
 							setPlayer(playerID,socket);
 							var pInfo = {
@@ -114,7 +114,8 @@ function loginServer(){
 									playerName:pm.getPlayerName(message.playerID),
 									character:pm.getChar(message.playerID),
 									avatar:pm.getCharAvatar(message.playerID),
-									session:pm.getLastSession(message.playerID)};								
+									session:pm.getLastSession(message.playerID)};
+									map:session.map;
 								unicast(playerSockets[message.playerID],pInfo);
 							} else{														
 								unicast(socket,{type:"PlayerNotFound"});
@@ -126,20 +127,20 @@ function loginServer(){
 							break
 						case "join_game":		
 							console.log("now setting player's session - #" + message.sessionID);
-							pm.setSession(message.playerID,message.sessionID);	
+							pm.setSession(message.playerID,sm.getSession(message.sessionID));	
 							sm.addPlayerToSession(message.sessionID,message.playerID);
-							console.log("checking player's("+message.playerID+") session: " + pm.getLastSession(message.playerID));
-							unicast(playerSockets[message.playerID],{type:"join_game"});
+							console.log("checking player's("+message.playerID+") session: " + pm.getLastSession(message.playerID).sessionID);
+							unicast(playerSockets[message.playerID],{type:"join_game",map:pm.getLastSession(message.playerID).map});
 							break;
 						case "new_game":
 							console.log("received new_game, setting up now...");
-							var lastSessionID = pm.getLastSession(message.playerID);
-							console.log("last game session ID: "+ lastSessionID);
-							if ( lastSessionID != undefined){
+							var lastSession = pm.getLastSession(message.playerID);
+							console.log("last game session: "+ lastSession);
+							if ( lastSession != undefined){
 								//remove player from the previous session, and if 
 								//nobody else is in that session, remove it.
 								console.log("attempting to remove player from session");
-								sm.removePlayerFromSession(lastSessionID,message.playerID);
+								sm.removePlayerFromSession(lastSession.sessionID,message.playerID);
 								pm.setSession(message.playerID,undefined);
 							}
 							var newSessionID = sm.addSession(message.ownerID,message.map);
@@ -155,8 +156,8 @@ function loginServer(){
 								console.log("Child-creating Error: " + f);
 							}
 							console.log("now setting player's session");
-							pm.setSession(message.playerID,newSessionID);
-							console.log("checking player's session: " + pm.getLastSession(message.playerID));
+							pm.setSession(message.playerID,sm.getSession(newSessionID));
+							console.log("checking player's session: " + pm.getLastSession(message.playerID).sessionID);
 							unicast(playerSockets[message.playerID],{type:"new_game",sessionID:newSessionID});
 							break;
 						case "get_all_sessions":

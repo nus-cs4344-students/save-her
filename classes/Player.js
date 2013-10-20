@@ -28,13 +28,15 @@ function Player(name,id){
 	}
 		
 	this.setSession = function(s){
-
+		
+		//set session object
 		that.session = s;		
 		
 	}
 	
 	this.getLastSession = function(){
-
+		
+		//return session object
 		return that.session;
 		
 	}

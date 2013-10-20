@@ -1,7 +1,6 @@
 "use strict"; 
  
 function Lobby(){
-	var socket;
 
 	var stage;
 	var root;
@@ -22,23 +21,9 @@ function Lobby(){
 	var selectMap;
 	
 	var lg_flag = false; //this flag is to help mark the login frame so that it only needs to be loaded once, after which just be toggled visible
-	var cs_flag = false; //this flag is to help mark the charSelect frame so that it only needs to be loaded once, after which just be toggled visible
 	var allSessions = new Array();
 	var sessionCount;
 	
-	/*
-     * private method: sendToServer(msg)
-     *
-     * The method takes in a JSON structure and send it
-     * to the server, after converting the structure into
-     * a string.
-	 *
-	 * adapted from PongClient.js
-     */
-    var sendToServer = function (msg) {
-        socket.send(JSON.stringify(msg));
-    }	
-		
     /*
      * private method: initNetwork(msg)
      *
@@ -50,6 +35,12 @@ function Lobby(){
         // Attempts to connect to game server
         try {
             socket = new SockJS("http://localhost:4001/SaveHer");
+			
+			socket.onopen = function() {
+				console.log("socket to server ready");
+				socketReady = true;
+			}
+
             socket.onmessage = function (e) {
                 var message = JSON.parse(e.data);
                 switch (message.type) {
@@ -65,11 +56,13 @@ function Lobby(){
 						character = message.character;
 						avatar = message.avatar;
 						session = message.session;
-						//console.log("received relog_player "+player+" "+playerName+" "+character+" "+avatar+" "+session);
+						map = message.map;
+						console.log("received relog_player "+player+" "+playerName+" "+character+" "+avatar+" "+session);
 						showMainLobby();
 						break;
 					case "join_game":
 						//console.log("joining game...");
+						map = message.map;
 						$(stage.canvas).fadeOut();
 						connectGame();
 						break;
@@ -95,7 +88,7 @@ function Lobby(){
 				}
             }
         } catch (e) {
-            console.log("Failed to connect to " + "http://" + Pong.SERVER_NAME + ":" + Pong.PORT);
+            console.log("Failed to connect to server");
         }
     }
 		
@@ -181,53 +174,49 @@ function Lobby(){
      */
 	
 	var showSelectChar = function(){
-		if (!cs_flag){
-			cs_flag = true;
-			charSelect = new zebra.ui.Panel();
-			charSelect.setLayout(new zebra.layout.FlowLayout(zebra.layout.CENTER,zebra.layout.CENTER,zebra.layout.HORIZONTAL, 2));
-			charSelect.setBounds(10,10, 680, 380);
-			root.add(charSelect);
-			prompt = new zebra.ui.Label("Select your character: ");
-			charSelect.add(zebra.layout.CENTER,prompt);
-			var devilz = new zebra.ui.ImagePan("images/devilz.gif",zebra.ui.MouseListener,[function mouseClicked(e){
-				charSelect.setVisible(false);
-				character = "devilz";
-				avatar = "images/devilz.gif";
-				sendToServer({type:"set_char", playerID:playerID,character:character}); 
-				//console.log("selected devilz");
-				showMainLobby();
-			}]);
-			var shroom = new zebra.ui.ImagePan("images/shroom.gif",zebra.ui.MouseListener,[function mouseClicked(e){
-				charSelect.setVisible(false);
-				character = "shroom";			
-				avatar = "images/shroom.gif";
-				sendToServer({type:"set_char", playerID:playerID,character:character}); 
-				//console.log("selected shroom");
-				showMainLobby();
-			}]);
-			var pompkin = new zebra.ui.ImagePan("images/pompkin.gif",zebra.ui.MouseListener,[function mouseClicked(e){
-				charSelect.setVisible(false);
-				character = "pompkin";			
-				avatar = "images/pompkin.gif";
-				sendToServer({type:"set_char", playerID:playerID,character:character}); 
-				//console.log("selected pompkin");
-				showMainLobby();
-			}]);
-			var human = new zebra.ui.ImagePan("images/human.gif",zebra.ui.MouseListener,[function mouseClicked(e){
-				charSelect.setVisible(false);
-				character = "human";		
-				avatar = "images/human.gif";		
-				sendToServer({type:"set_char", playerID:playerID,character:character}); 
-				//console.log("selected human");
-				showMainLobby();
-			}]);
-			charSelect.add(zebra.layout.CENTER,pompkin);
-			charSelect.add(zebra.layout.CENTER,human);
-			charSelect.add(zebra.layout.CENTER,devilz);
-			charSelect.add(zebra.layout.CENTER,shroom);
-		} else{
-			charSelect.setVisible(true);
-		}
+		charSelect = new zebra.ui.Panel();
+		charSelect.setLayout(new zebra.layout.FlowLayout(zebra.layout.CENTER,zebra.layout.CENTER,zebra.layout.HORIZONTAL, 2));
+		charSelect.setBounds(10,10, 680, 380);
+		root.add(charSelect);
+		prompt = new zebra.ui.Label("Select your character: ");
+		charSelect.add(zebra.layout.CENTER,prompt);
+		var devilz = new zebra.ui.ImagePan("images/devilz.gif",zebra.ui.MouseListener,[function mouseClicked(e){
+			charSelect.setVisible(false);
+			character = "devilz";
+			avatar = "images/devilz.gif";
+			sendToServer({type:"set_char", playerID:playerID,character:character}); 
+			//console.log("selected devilz");
+			showMainLobby();
+		}]);
+		var shroom = new zebra.ui.ImagePan("images/shroom.gif",zebra.ui.MouseListener,[function mouseClicked(e){
+			charSelect.setVisible(false);
+			character = "shroom";			
+			avatar = "images/shroom.gif";
+			sendToServer({type:"set_char", playerID:playerID,character:character}); 
+			//console.log("selected shroom");
+			showMainLobby();
+		}]);
+		var pompkin = new zebra.ui.ImagePan("images/pompkin.gif",zebra.ui.MouseListener,[function mouseClicked(e){
+			charSelect.setVisible(false);
+			character = "pompkin";			
+			avatar = "images/pompkin.gif";
+			sendToServer({type:"set_char", playerID:playerID,character:character}); 
+			//console.log("selected pompkin");
+			showMainLobby();
+		}]);
+		var human = new zebra.ui.ImagePan("images/human.gif",zebra.ui.MouseListener,[function mouseClicked(e){
+			charSelect.setVisible(false);
+			character = "human";		
+			avatar = "images/human.gif";		
+			sendToServer({type:"set_char", playerID:playerID,character:character}); 
+			//console.log("selected human");
+			showMainLobby();
+		}]);
+		charSelect.add(zebra.layout.CENTER,pompkin);
+		charSelect.add(zebra.layout.CENTER,human);
+		charSelect.add(zebra.layout.CENTER,devilz);
+		charSelect.add(zebra.layout.CENTER,shroom);
+		
 	}
 	
     /*
@@ -357,7 +346,7 @@ function Lobby(){
 		var mapC1 = new zebra.ui.ImagePan("images/map1.png",zebra.ui.MouseListener,[function mouseClicked(e){
 			selectMap.setVisible(false);
 			loading.setVisible(true);
-			map = 1;
+			map = 0;
 			//console.log("selected map 1");
 			newGame();
 		}, function mouseEntered(e){
@@ -370,7 +359,7 @@ function Lobby(){
 		var mapC2 = new zebra.ui.ImagePan("images/map2.png",zebra.ui.MouseListener,[function mouseClicked(e){
 			selectMap.setVisible(false);
 			loading.setVisible(true);
-			map = 2;
+			map = 1;
 			//console.log("selected map 2");
 			newGame();
 		}, function mouseEntered(e){
@@ -383,7 +372,7 @@ function Lobby(){
 		var mapC3 = new zebra.ui.ImagePan("images/map3.png",zebra.ui.MouseListener,[function mouseClicked(e){
 			selectMap.setVisible(false);
 			loading.setVisible(true);
-			map = 3;
+			map = 2;
 			//console.log("selected map 3");
 			newGame();
 		}, function mouseEntered(e){
@@ -418,7 +407,8 @@ function Lobby(){
      */
 	
 	var connectGame = function(){
-		var game = new Game(session,character);
+		console.log("map = " + map);
+		var game = new Game(session,map,character);
 	
 	}
 	

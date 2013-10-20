@@ -43,7 +43,7 @@ function SessionManager(){
 	this.getSession = function(sessionID){
 		return sessions[sessionID];
 	}
-	
+		
 	this.getTotalSessions = function(){
 		return sessionCount;
 	}

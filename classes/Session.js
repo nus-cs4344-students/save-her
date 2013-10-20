@@ -31,6 +31,7 @@ function Session(player,id,m){
 		
 	}
 	
+	
 	var isEmpty = function(){
 		
 		if (that.numPlayers==0){

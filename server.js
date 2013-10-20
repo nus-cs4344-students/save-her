@@ -12,6 +12,7 @@ require(lib_path + "utility.js");
 
 // server position of all players
 var players = [];
+var characters = [];
 var bulletManagers = [];
 var sockets = {};
 
@@ -64,13 +65,10 @@ function Server() {
 		try{
 			// send current players to the new player
 			for (var id in sockets)
-				unicast(socket, {type: "newPlayer", playerID: id, characterType: CHARACTERTYPE.PUMPKIN})
+				unicast(socket, {type: "newPlayer", playerID: id, characterType: characters[id]})
 
 			sockets[socket.id] = socket;
-			players[socket.id] = characterFac.createCharacter(null, CHARACTERTYPE.PUMPKIN, false);
-			bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
-			// broadcast current players with the new player
-			broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: CHARACTERTYPE.PUMPKIN})
+			
 
 			// on receiving something from client
 			socket.on("data", function(e) {
@@ -79,6 +77,13 @@ function Server() {
 				var broadcast = false;
 				var message = JSON.parse(e);
 				switch (message.type) {
+					case "newPlayer":
+						console.log("new game player");
+						characters[socket.id] = message.characterType;
+						players[socket.id] = characterFac.createCharacter(null, message.characterType, false);
+						bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
+						// broadcast current players with the new player
+						broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: message.characterType})
 					case "posForce":
 						var player = players[socket.id];
 						players[socket.id].interpolateTo(message.x, message.y);

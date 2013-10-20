@@ -12,12 +12,13 @@ var mapRects = [];		// collision rectangles for map
 var camera;
 var cameraBack;
 
-var mapType = Math.floor((Math.random()*3));	// 0:graveyard, 1:pixel, 2:happy
+var mapType;	// 0:graveyard, 1:pixel, 2:happy
 
-function Game(s,c){
+function Game(s,m,c){
 	
 	session = s;
 	player_char = c;
+	mapType = m;
 	
 	// initialise sounds and music
 	//initSounds();
@@ -232,21 +233,25 @@ function Game(s,c){
 		switch(player_char){
 			case "pompkin":
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
+				player_char = CHARACTERTYPE.PUMPKIN;
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herPumpkin000" + k + ".png"));
 				break;
 			case "shroom":
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.MUSHROOM, true);
+				player_char = CHARACTERTYPE.MUSHROOM;
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herMushroom000" + k + ".png"));
 				break;
 			case "human":
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.HUMAN, true);
+				player_char = CHARACTERTYPE.HUMAN;
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
 				break;
 			case "devilz":
 				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.DEVIL, true);
+				player_char = CHARACTERTYPE.DEVIL;
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herDevil000" + k + ".png"));
 				break;
@@ -271,12 +276,12 @@ function Game(s,c){
 		camera.position.y = ownCharacter.getSprite().position.y + 100;
 
 		// networking		
-		console.log("socket to server check");
 		socket = new SockJS("http://localhost:4000/game");	// set as global variable in constants.js
 		
 		socket.onopen = function() {
-			console.log("socket to server ready");
+			console.log("socket to game server ready");
 			socketReady = true;
+			sendToServer({type:"newPlayer",characterType:player_char});
 		}
 
 		// on receiving a message from server
