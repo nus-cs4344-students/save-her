@@ -276,7 +276,7 @@ function Game(s,m,c){
 		camera.position.y = ownCharacter.getSprite().position.y + 100;
 
 		// networking		
-		socket = new SockJS("http://localhost:4000/game");	// set as global variable in constants.js
+		socket = new SockJS("http://localhost:4001/game");	// set as global variable in constants.js
 		
 		socket.onopen = function() {
 			console.log("socket to game server ready");

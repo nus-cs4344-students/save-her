@@ -128,7 +128,7 @@ function Server() {
     var httpServer = http.createServer(application);
 
     serverSocket.installHandlers(httpServer, {prefix: '/game'});
-    httpServer.listen(4000, '0.0.0.0');
+    httpServer.listen(4001, '0.0.0.0');
     application.use(express.static(__dirname));
 }
 
