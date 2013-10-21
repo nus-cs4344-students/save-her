@@ -1,6 +1,6 @@
 "use strict";
 
-function bullet(stageArg, init_x, init_y, speed, path, isS) {
+function bullet(stageArg, init_x, init_y, speed, path, isS, dmg) {
     var wallDetector;
     var that = this;
     var stage = stageArg;
@@ -27,7 +27,7 @@ function bullet(stageArg, init_x, init_y, speed, path, isS) {
         stage.addChild(b);
         onStage = true;
     }
-    this.damage = 5;
+    this.damage = dmg;
     this.ttl = 18;
     this.speed = speed;
     wallDetector = new Rectangle(stage, x - 20, y -5, 40, 13);

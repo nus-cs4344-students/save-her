@@ -22,6 +22,7 @@
 	<script src="classes/characterFactory.js"></script>
 	<script src="classes/bullet.js"></script>
 	<script src="classes/bulletManager.js"></script>
+	<script src="classes/SkillManager.js"></script>
 	<script src="classes/constants.js"></script>
 	<script src="classes/rectangle.js"></script>
 	<script src="classes/utility.js"></script>
@@ -38,6 +39,7 @@
 
 		var ownBulletManager;	// bullet manager
 		var bulletManagers = [];
+		var skillManagers = [];
 		var mapRects = [];		// collision rectangles for map
 
 		var camera;
@@ -257,7 +259,7 @@
 				// @PRISCILLA - this is where your own character is created (currently type is random)
 				var characterFac = new CharacterFactory();
 				var herTextures = [];
-				switch(Math.floor((Math.random()*4))){
+				switch(0){
 					case 0:
 						ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
 						for(var k=0; k<4; k++)
@@ -293,7 +295,7 @@
 
 				// initialise bullet manager
 				ownBulletManager = new BulletManager(camera, ownCharacter,true, false);
-				
+				ownSkillManager = new SkillManager(camera, ownCharacter, ownBulletManager, true, false);
 				// set camera to player
 				camera.position.x = ownCharacter.getSprite().position.x + 200;
 				camera.position.y = ownCharacter.getSprite().position.y + 100;
@@ -319,6 +321,7 @@
 	                	case "newPlayer":
                 			characters[message.playerID] = characterFac.createCharacter(camera, message.characterType, false);
 							bulletManagers[message.playerID] = new BulletManager(camera,characters[message.playerID],false, false);
+							skillManagers[message.playerID] = new SkillManager(camera,characters[message.playerID],bulletManagers[message.playerID],false, false);
                 			addPlayerGUI(stage);
                 			break;
 
@@ -346,6 +349,23 @@
 							else
 								ownCharacter.hurt(message.dmg);
 							break;
+						case "mineHurt":
+							if(typeof(characters[message.p1])=="undefined")
+								ownSkillManager.removeMine(message.mineId);
+							if(typeof(characters[message.p2])!="undefined")
+								characters[message.p2].hurt(message.dmg);
+							else
+								ownCharacter.hurt(message.dmg);
+							break;
+						case "skill":
+							skillManagers[message.playerID].skill();
+							break;
+						case "stun":
+							if(typeof(characters[message.p2])!="undefined")
+								characters[message.p2].stun(message.time);
+							else
+								ownCharacter.stun(message.time);
+							break;
 	                }
 
 				}
@@ -368,7 +388,7 @@
 					
 					// update bullets
 					ownBulletManager.update(characters,null,null);
-
+					ownSkillManager.update(characters,null,null);
 					// update UI
 					gameGUIUpdate();
 				}
@@ -379,7 +399,7 @@
 				{
 					characters[playerID].update();
 					bulletManagers[playerID].update(characters,ownCharacter,playerID);
-					
+					skillManagers[playerID].update(characters,ownCharacter,playerID);
 					//alert(playerID);
 				}
 

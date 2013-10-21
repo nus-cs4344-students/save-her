@@ -4,6 +4,7 @@ var lib_path = "./classes/";
 require(lib_path + "character.js");
 require(lib_path + "bullet.js");
 require(lib_path + "bulletManager.js");
+require(lib_path + "SkillManager.js");
 require(lib_path + "characterFactory.js");
 require(lib_path + "constantsServer.js");
 require(lib_path + "particleManager.js");
@@ -14,7 +15,8 @@ require(lib_path + "utility.js");
 var players = [];
 var characters = [];
 var bulletManagers = [];
-var sockets = {};
+var skillManagers = [];
+var sockets = [];
 
 /*
  * private method: unicast(socket, msg)
@@ -62,73 +64,82 @@ function Server() {
     var counter = 0;
 
     serverSocket.on("connection", function(socket) {
-		try{
-			// send current players to the new player
-			for (var id in sockets)
-				unicast(socket, {type: "newPlayer", playerID: id, characterType: characters[id]})
+        try {
+            // send current players to the new player
+            for (var id in sockets)
+                unicast(socket, {type: "newPlayer", playerID: id, characterType: characters[id]})
 
-			sockets[socket.id] = socket;
-			
+            sockets[socket.id] = socket;
 
-			// on receiving something from client
-			socket.on("data", function(e) {
-				console.log(e);
 
-				var broadcast = false;
-				var message = JSON.parse(e);
-				switch (message.type) {
-					case "newPlayer":
-						console.log("new game player");
-						characters[socket.id] = message.characterType;
-						players[socket.id] = characterFac.createCharacter(null, message.characterType, false);
-						bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
-						// broadcast current players with the new player
-						broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: message.characterType})
-					case "posForce":
-						var player = players[socket.id];
-						players[socket.id].interpolateTo(message.x, message.y);
-						broadcast = true;
-						break;
-					case "pos":
-						var player = players[socket.id];
-						var diffX = Math.abs(player.getPosX() - message.x);
-						var diffY = Math.abs(player.getPosY() - message.y);
-						if (diffX > 200 || diffY > 200) {
-							players[socket.id].interpolateTo(message.x, message.y);
-							broadcast = true;
-						}
-						break;
-					case "jump":
-						players[socket.id].jump();
-						broadcast = true;
-						break;
-					case "speedX":
-						players[socket.id].setSpeedX(message.x);
-						broadcast = true;
-						break;
-					case "shoot":
-						bulletManagers[socket.id].setDir(message.dir);
-						bulletManagers[socket.id].shoot();
-						broadcast = true;
-						break;
-				}
+            // on receiving something from client
+            socket.on("data", function(e) {
+                console.log(e);
 
-				var id;
+                var broadcast = false;
+                var message = JSON.parse(e);
+                switch (message.type) {
+                    case "newPlayer":
+                        console.log("new game player");
+                        //characters[socket.id] = message.characterType;
+                        players[socket.id] = characterFac.createCharacter(null, CHARACTERTYPE.PUMPKIN, false);
+                        bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
+                        skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id], false, true);
+                        // broadcast current players with the new player
+                        broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: CHARACTERTYPE.PUMPKIN})
+                    case "posForce":
+                        var player = players[socket.id];
+                        players[socket.id].interpolateTo(message.x, message.y);
+                        broadcast = true;
+                        break;
+                    case "pos":
+                        var player = players[socket.id];
+                        var diffX = Math.abs(player.getPosX() - message.x);
+                        var diffY = Math.abs(player.getPosY() - message.y);
+                        if (diffX > 200 || diffY > 200) {
+                            players[socket.id].interpolateTo(message.x, message.y);
+                            broadcast = true;
+                        }
+                        break;
+                    case "jump":
+                        players[socket.id].jump();
+                        broadcast = true;
+                        break;
+                    case "speedX":
+                        players[socket.id].setSpeedX(message.x);
+                        broadcast = true;
+                        break;
+                    case "shoot":
+                        bulletManagers[socket.id].setDir(message.dir);
+                        bulletManagers[socket.id].shoot();
+                        broadcast = true;
+                        break;
+                    case "skill":
+                        //use the accurate position
+                        if (players[socket.id].characterType == CHARACTERTYPE.PUMPKIN)
+                            skillManagers[socket.id].serverMine(message.x, message.y);
+                        else
+                            skillManagers[socket.id].skill();
+                        broadcast = true;
+                        break;
+                }
 
-				// broadcast to all other players
-				if (broadcast)
-					broadcastRestWithPlayerID(socket, message);
-			});
-		} catch (e){
+                var id;
+
+                // broadcast to all other players
+                if (broadcast)
+                    broadcastRestWithPlayerID(socket, message);
+            });
+        } catch (e) {
             console.log("Error: " + e);
-		}
+        }
     });
 
     var application = express();
     var httpServer = http.createServer(application);
 
     serverSocket.installHandlers(httpServer, {prefix: '/game'});
-    httpServer.listen(4000, '0.0.0.0');
+    httpServer.listen(4001, '0.0.0.0');
     application.use(express.static(__dirname));
 }
 
@@ -175,19 +186,17 @@ function Main() {
             {
                 broadcast(msgs[i]);
             }
+            var msgs = skillManagers[id].update(players, null, id);
+
+            for (var i = 0; i < msgs.length; i++)
+            {
+                broadcast(msgs[i]);
+            }
             ;
         }
 
-        //computeDamage();
     }
-    function computeDamage() {
-        for (var i in bulletManagers)
-            for (var j in players) {
-                if (i != j) {
 
-                }
-            }
-    }
 }
 
 var application = new Main();

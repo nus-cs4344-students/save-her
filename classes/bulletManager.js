@@ -10,6 +10,10 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
     var player = playerArg;
     var isServer = isS;
     var speed = 20;
+    var dmg = 5;
+    var normalBulletPath = "sprites/bullet.png";
+    var powerBulletPath = "sprites/pbullet.png";
+    var bulletPath = "sprites/bullet.png";
     this.setIsMine = function(isMe) {
         that.isMine = isMe;
     }
@@ -61,8 +65,8 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
 
                         if (players[j].isColliding(bullets[i].getRect()))
                         {
-							//play sound if bullet hit
-							playSound(bulletHit, false);
+                            //play sound if bullet hit
+                            playSound(bulletHit, false);
                             bullets[i].destroy();
                             //alert(bullets[i].getTtl());
                             bullets.splice(i, 1);
@@ -78,8 +82,8 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 {
                     if (own.isColliding(bullets[i].getRect()))
                     {
-						//play sound if bullet hit
-						playSound(bulletHit, false);
+                        //play sound if bullet hit
+                        playSound(bulletHit, false);
                         bullets[i].destroy();
                         //alert(bullets[i].getTtl());
                         bullets.splice(i, 1);
@@ -90,7 +94,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
         }
     }
     this.update = function(players, own, id) {
-
+        //console.log(that.shootDuration);
         for (var i = 0; i < bullets.length; i++) {
             if (bullets[i].ttl > 0)
             {
@@ -105,7 +109,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
 
         }
         // console.log(bullets.length);
-		
+
         if (isServer)
             return that.detectCollision(players, null, id);
         else
@@ -114,7 +118,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 that.detectCollision(players, own, id);
             else
             {
-                that.detectCollision(players, null, null); 
+                that.detectCollision(players, null, null);
             }
 
         if (that.isMine) {
@@ -124,16 +128,25 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 if (keys[i] == 'z')
                 {
                     that.shoot();
-					playSound(bulletSound, false);
+                    playSound(bulletSound, false);
                 }
 
             }
 
-            if(player.isFacingRight())
+            if (player.isFacingRight())
                 dir = 0;
             else
                 dir = 1;
         }
+    }
+    this.powerUp = function(){
+        bulletPath = powerBulletPath;
+        dmg = 10;
+        
+        setTimeout(function(){
+            bulletPath = normalBulletPath;
+            dmg = 5;
+        },10000);
     }
     this.setDir = function(dirA) {
         dir = dirA;
@@ -149,18 +162,19 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
 
             var yOffset = 0;
             // huamn holds gun higher
-            if(player.characterType == CHARACTERTYPE.HUMAN)
+            if (player.characterType == CHARACTERTYPE.HUMAN)
                 yOffset = -10;
 
             // create firing effect
-            if(!ISSERVER) createFiringFX(x, y + yOffset, dir);
+            if (!ISSERVER)
+                createFiringFX(x, y + yOffset, dir);
 
             if (dir == 0) {
                 var startX = x;
                 var startY = y;
                 //console.log(x+" "+y);
 
-                var newBullet = new bullet(stage, x, y + yOffset, speed, "bullet.png", isServer);
+                var newBullet = new bullet(stage, x, y + yOffset, speed,bulletPath, isServer, dmg);
 
                 //sendToServer({type:"bullet",x:x,y:y,speed:20,tex:"PIXI/bulletRight.png"});
                 bullets.push(newBullet);
@@ -169,7 +183,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
             if (dir == 1) {
                 var startX = x;
                 var startY = y;
-                var newBullet = new bullet(stage, x, y + yOffset, 0 - speed, "bullet.png", isServer);
+                var newBullet = new bullet(stage, x, y + yOffset, 0 - speed, bulletPath, isServer, dmg);
                 bullets.push(newBullet);
                 //sendToServer({type:"bullet",x:x,y:y,speed:-20,tex:"PIXI/bulletLeft.png"});
                 newBullet.move();

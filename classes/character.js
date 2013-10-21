@@ -176,7 +176,7 @@ function Character(){
 
 	// use resulting movement to determine animation to play
 	var setAnimationBasedOnSpeed = function(deltaX){
-
+            if(!ISSERVER){
 		if(!inAir){
 			if(deltaX == 0)
 				setAnimation("Stop");
@@ -185,7 +185,7 @@ function Character(){
 		} else {
 			setAnimation("Jump");
 		}
-
+            }
 	}
 
 	var uninterruptedAnimation = false;
@@ -482,7 +482,8 @@ function Character(){
 		// remove invincible after a while
 		setTimeout(function(){
 			invincible = false;
-			spriteMovieClip.visible = true;
+                        if (!ISSERVER)
+                            spriteMovieClip.visible = true;
 			clearInterval(flashEffect);
 		}, 3100);
 	}
@@ -501,12 +502,17 @@ function Character(){
 		
 		return true;
 	}
-
+        this.stun = function(time){
+            //@HONGWEI please add the stun function
+            console.log("stunned");
+        }
 	// return if collided with rectangle
 	this.isColliding = function(rectangle){
 		return (bodyDetector.isIntersecting(rectangle));
 	}
-
+        this.isCollidingCircle = function(x,y,r){
+            return bodyDetector.isIntersectingCircle(x,y,r);
+        }
 	this.isFacingRight = function(){
 		return faceRight;
 	}
