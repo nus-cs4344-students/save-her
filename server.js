@@ -67,10 +67,16 @@ function Server() {
         try {
             // send current players to the new player
             for (var id in sockets)
-                unicast(socket, {type: "newPlayer", playerID: id, characterType: characters[id]})
+                unicast(socket, {type: "newPlayer", playerID: id, characterType: CHARACTERTYPE.MUSHROOM})
 
             sockets[socket.id] = socket;
-
+            console.log("new game player");
+            //characters[socket.id] = message.characterType;
+            players[socket.id] = characterFac.createCharacter(null, CHARACTERTYPE.MUSHROOM, false);
+            bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
+            skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id], false, true);
+            // broadcast current players with the new player
+            broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: CHARACTERTYPE.MUSHROOM})
 
             // on receiving something from client
             socket.on("data", function(e) {
@@ -79,14 +85,7 @@ function Server() {
                 var broadcast = false;
                 var message = JSON.parse(e);
                 switch (message.type) {
-                    case "newPlayer":
-                        console.log("new game player");
-                        //characters[socket.id] = message.characterType;
-                        players[socket.id] = characterFac.createCharacter(null, CHARACTERTYPE.PUMPKIN, false);
-                        bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
-                        skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id], false, true);
-                        // broadcast current players with the new player
-                        broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: CHARACTERTYPE.PUMPKIN})
+
                     case "posForce":
                         var player = players[socket.id];
                         players[socket.id].interpolateTo(message.x, message.y);
@@ -139,7 +138,7 @@ function Server() {
     var httpServer = http.createServer(application);
 
     serverSocket.installHandlers(httpServer, {prefix: '/game'});
-    httpServer.listen(4001, '0.0.0.0');
+    httpServer.listen(4000, '0.0.0.0');
     application.use(express.static(__dirname));
 }
 
