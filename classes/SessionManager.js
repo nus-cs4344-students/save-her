@@ -31,13 +31,22 @@ function SessionManager(){
 	
 	}
 	
+	this.setPort = function(sessionID,port){
+	
+		sessions[sessionID].port = port;
+	
+	}
+	
 	this.removePlayerFromSession = function(sessionID,playerID){
 		console.log("removing player from session");
 		if (!sessions[sessionID].removePlayer(playerID)){
 			//if no players left
 			removeSession(sessionID);
+			//return true if session is deleted
+			return true;
 		}
-	
+		//else return false (means no session deleted)
+		return false;
 	}
 	
 	this.getSession = function(sessionID){

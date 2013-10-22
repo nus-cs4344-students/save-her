@@ -7,6 +7,7 @@ function Session(player,id,m){
 	this.playerLabel = 0;
 	this.numPlayers = 1;
 	this.map = m;
+	this.port;
 	this.players = new Array();
 	this.players[0] = player;
 	

@@ -8,6 +8,10 @@ function Enum() {
     }
 }
 
+global.nextPort = function(){
+	global.GAMEPORT= 5001;
+}
+
 // use with CHARACTERTYPE.PUMPKIN and so on
 global.CHARACTERTYPE = new Enum("PUMPKIN", "MUSHROOM", "HUMAN", "DEVIL");
 
@@ -23,6 +27,8 @@ global.CHARACTERMAXFALLSPEED = 12;
 global.CHARACTERJUMPGRAVITATIONALPULL = 3;	// higher = less pull
 
 global.ISSERVER = true;
+
+global.GAMEPORT = 4001;
 
 // 1 is top of a tile
 // 2 is lower part of a tile

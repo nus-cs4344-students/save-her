@@ -1,6 +1,7 @@
 "use strict;"
 
 var session;
+var port;
 var player_char;
 var ownCharacter;		// own player's character
 var characters = [];	// other players' character
@@ -16,11 +17,12 @@ var cameraBack;
 
 var mapType;	// 0:graveyard, 1:pixel, 2:happy
 
-function Game(s,m,c){
+function Game(s,m,c,p){
 	
 	session = s;
 	player_char = c;
 	mapType = m;
+	port = p;
 	
 	// initialise sounds and music
 	//initSounds();
@@ -278,7 +280,8 @@ function Game(s,m,c){
 		camera.position.y = ownCharacter.getSprite().position.y + 100;
 
 		// networking		
-		socket = new SockJS("http://localhost:4001/game");	// set as global variable in constants.js
+		var url = "http://localhost:"+port+"/game"
+		socket = new SockJS(url);	// set as global variable in constants.js
 		
 		socket.onopen = function() {
 			console.log("socket to game server ready");

@@ -18,6 +18,9 @@ var bulletManagers = [];
 var skillManagers = [];
 var sockets = [];
 
+// for managing ports
+var usedPorts = [];
+
 /*
  * private method: unicast(socket, msg)
  *
@@ -51,7 +54,7 @@ var broadcast = function(msg) {
     for (var id in sockets)
         sockets[id].write(messageToSend);
 }
-function Server() {
+function Server(port) {
 
     var express = require('express');
     var http = require('http');
@@ -139,7 +142,7 @@ function Server() {
     var httpServer = http.createServer(application);
 
     serverSocket.installHandlers(httpServer, {prefix: '/game'});
-    httpServer.listen(4001, '0.0.0.0');
+    httpServer.listen(port, '0.0.0.0');
     application.use(express.static(__dirname));
 }
 
@@ -200,6 +203,29 @@ function Main() {
 
 }
 
+//---for managing communication between server.js (child) and loginServer.js (parent)
+process.on('SIGTERM', function () {
+	console.log("exiting");
+	process.exit(0);
+});
+
+var isGoodPort = function(port){
+	for (var i = 0; i<usedPorts.length; i++){
+		if (usedPorts[i] == port){
+			return false;
+		}
+	}
+	usedPorts.push(port);
+	return true;
+}
+
 var application = new Main();
-var server = new Server();
+console.log("old GAMEPORT = " + GAMEPORT);
+var p = GAMEPORT+Math.floor((Math.random()*100)+1);
+while (!isGoodPort(p)){
+	p = GAMEPORT+Math.floor((Math.random()*100)+1);
+}
+process.send({port:p});
+var server = new Server(p);
+console.log("connecting to port = " + p);
 application.start();

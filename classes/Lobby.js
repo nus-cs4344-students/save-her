@@ -12,6 +12,7 @@ function Lobby(){
 	var avatar;
 	var map;
 	var session;
+	var port;
 	
 	var loading;
 	var begin;
@@ -72,20 +73,22 @@ function Lobby(){
 						playerName = message.playerName;
 						character = message.character;
 						avatar = message.avatar;
-						session = message.session;
-						map = message.map;
-						console.log("received relog_player "+player+" "+playerName+" "+character+" "+avatar+" "+session);
+						console.log("received relog_player "+player+" "+playerName+" "+character+" "+avatar);
 						showMainLobby();
 						break;
 					case "join_game":
 						//console.log("joining game...");
 						map = message.map;
+						port = message.port;
+						console.log("received join_game map = " + map + " and port = " + port);
 						$(stage.canvas).fadeOut();
 						connectGame();
 						break;
 					case "new_game":
 						session = message.sessionID;
+						port = message.port;
 						//console.log("received new_game from server, sessionID = #" + session);
+						console.log("received new_game map = " + map + " and port = " + port);
 						$(stage.canvas).fadeOut();
 						connectGame();
 						break;
@@ -331,37 +334,44 @@ function Lobby(){
 					if (allSessions[i]!= undefined){
 						//console.log("displaying.." + allSessions[i].sessionID);
 						var id = allSessions[i].sessionID;
-						if (allSessions[i].sessionID == session){
-							var s = new zebra.ui.Label(new zebra.data.Text(id.toString()),
-							zebra.ui.MouseListener,[function mouseClicked(e){
-								subLobby.setVisible(false);
-								mainLobby.setVisible(false);
-								loading.setVisible(true);
-								clearInterval(checkSessions);
-								session = this.getValue();
-								//console.log("rejoin session #" + session);
-								sendToServer({type:"join_game", playerID:playerID, sessionID:session}); 
-							}]);
-							var s2 = new zebra.ui.Label("Last Played: Map " + allSessions[i].map + " (" + allSessions[i].numPlayers + " Players)");
-						}
-						else{	
-							var s = new zebra.ui.Label(new zebra.data.Text(id.toString()),
-							zebra.ui.MouseListener,[function mouseClicked(e){		
-								subLobby.setVisible(false);
-								mainLobby.setVisible(false);
-								loading.setVisible(true);
-								clearInterval(checkSessions);
-								session = this.getValue();
-								//console.log("join session #" + session);
-								sendToServer({type:"join_game", playerID:playerID, sessionID:session}); 
-							}]);
-							var s2 = new zebra.ui.Label("Map " + allSessions[i].map + " (" + allSessions[i].numPlayers + " Players)");
-						}
+						var s = new zebra.ui.Label(new zebra.data.Text(id.toString()),
+						zebra.ui.MouseListener,[function mouseClicked(e){		
+							subLobby.setVisible(false);
+							mainLobby.setVisible(false);
+							loading.setVisible(true);
+							clearInterval(checkSessions);
+							session = this.getValue();
+							//console.log("join session #" + session);
+							sendToServer({type:"join_game", playerID:playerID, sessionID:session}); 
+						}]);
+						var s0 = new zebra.ui.Label("Session #",
+						zebra.ui.MouseListener,[function mouseClicked(e){		
+							subLobby.setVisible(false);
+							mainLobby.setVisible(false);
+							loading.setVisible(true);
+							clearInterval(checkSessions);
+							session = s.getValue();
+							//console.log("join session #" + session);
+							sendToServer({type:"join_game", playerID:playerID, sessionID:session}); 
+						}]);
+						var s2 = new zebra.ui.Label("- Map " + allSessions[i].map + " (" + allSessions[i].numPlayers + " Players)",
+						zebra.ui.MouseListener,[function mouseClicked(e){		
+							subLobby.setVisible(false);
+							mainLobby.setVisible(false);
+							loading.setVisible(true);
+							clearInterval(checkSessions);
+							session = s.getValue();
+							//console.log("join session #" + session);
+							sendToServer({type:"join_game", playerID:playerID, sessionID:session}); 
+						}]);
+						
 						s.setLocation(300,yposition);
-						s2.setLocation();
+						s0.setLocation(230,yposition);
+						s2.setLocation(330,yposition);
 						subLobby.add(s);
 						subLobby.add(s2);
-						yposition += 50;
+						subLobby.add(s0);
+						yposition += 30;
 					}
 					
 					
@@ -461,7 +471,8 @@ function Lobby(){
 	
 	var connectGame = function(){
 		console.log("map = " + map);
-		var game = new Game(session,map,character);
+		console.log("port = " + port);
+		var game = new Game(session,map,character,port);
 	
 	}
 	
