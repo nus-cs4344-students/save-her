@@ -6,7 +6,9 @@ var ownCharacter;		// own player's character
 var characters = [];	// other players' character
 
 var ownBulletManager;	// bullet manager
+var ownSkillManager;
 var bulletManagers = [];
+var skillManagers = [];
 var mapRects = [];		// collision rectangles for map
 
 var camera;
@@ -270,13 +272,13 @@ function Game(s,m,c){
 
 		// initialise bullet manager
 		ownBulletManager = new BulletManager(camera, ownCharacter,true, false);
-		
+		ownSkillManager = new SkillManager(camera, ownCharacter, ownBulletManager, true, false);
 		// set camera to player
 		camera.position.x = ownCharacter.getSprite().position.x + 200;
 		camera.position.y = ownCharacter.getSprite().position.y + 100;
 
 		// networking		
-		socket = new SockJS("http://localhost:4000/game");	// set as global variable in constants.js
+		socket = new SockJS("http://localhost:4001/game");	// set as global variable in constants.js
 		
 		socket.onopen = function() {
 			console.log("socket to game server ready");
@@ -299,6 +301,7 @@ function Game(s,m,c){
 				case "newPlayer":
 					characters[message.playerID] = characterFac.createCharacter(camera, message.characterType, false);
 					bulletManagers[message.playerID] = new BulletManager(camera,characters[message.playerID],false, false);
+                                        skillManagers[message.playerID] = new SkillManager(camera,characters[message.playerID],bulletManagers[message.playerID],false, false);
 					addPlayerGUI(stage);
 					break;
 
@@ -326,6 +329,23 @@ function Game(s,m,c){
 					else
 						ownCharacter.hurt(message.dmg);
 					break;
+                                case "mineHurt":
+							if(typeof(characters[message.p1])=="undefined")
+								ownSkillManager.removeMine(message.mineId);
+							if(typeof(characters[message.p2])!="undefined")
+								characters[message.p2].hurt(message.dmg);
+							else
+								ownCharacter.hurt(message.dmg);
+							break;
+						case "skill":
+							skillManagers[message.playerID].skill();
+							break;
+						case "stun":
+							if(typeof(characters[message.p2])!="undefined")
+								characters[message.p2].stun(message.time);
+							else
+								ownCharacter.stun(message.time);
+							break;
 			}
 
 		}
@@ -348,7 +368,7 @@ function Game(s,m,c){
 			
 			// update bullets
 			ownBulletManager.update(characters,null,null);
-
+                        ownSkillManager.update(characters,null,null);
 			// update UI
 			gameGUIUpdate();
 		}
@@ -359,7 +379,7 @@ function Game(s,m,c){
 		{
 			characters[playerID].update();
 			bulletManagers[playerID].update(characters,ownCharacter,playerID);
-			
+			skillManagers[playerID].update(characters,ownCharacter,playerID);
 			//alert(playerID);
 		}
 

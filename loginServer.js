@@ -5,6 +5,7 @@ require(lib_path + "PlayerManager.js");
 require(lib_path + "Player.js");
 require(lib_path + "SessionManager.js");
 require(lib_path + "Session.js");
+require(lib_path + "constantsServer.js");
 
 function loginServer(){
 
@@ -130,7 +131,7 @@ function loginServer(){
 							pm.setSession(message.playerID,sm.getSession(message.sessionID));	
 							sm.addPlayerToSession(message.sessionID,message.playerID);
 							console.log("checking player's("+message.playerID+") session: " + pm.getLastSession(message.playerID).sessionID);
-							unicast(playerSockets[message.playerID],{type:"join_game",map:pm.getLastSession(message.playerID).map});
+							unicast(playerSockets[message.playerID],{type:"join_game",map:sm.getSession(message.sessionID).map});
 							break;
 						case "new_game":
 							console.log("received new_game, setting up now...");
@@ -175,7 +176,7 @@ function loginServer(){
 	var httpServer = http.createServer(application);
 
 	serverSocket.installHandlers(httpServer, {prefix:'/SaveHer'});
-	httpServer.listen(4001, '0.0.0.0');
+	httpServer.listen(4000, '0.0.0.0');
 	application.use(express.static(__dirname));
 }
 
