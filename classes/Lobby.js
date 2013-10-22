@@ -474,7 +474,7 @@ function Lobby(){
 	
 	var newGame = function(){
 	
-		sendToServer({type:"new_game", playerID:playerID, ownerID:playerID, map:map}); 
+		setTimeout(function(){sendToServer({type:"new_game", playerID:playerID, ownerID:playerID, map:map}); },1000);
 		
 	}
 	

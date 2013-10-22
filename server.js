@@ -180,19 +180,20 @@ function Main() {
     function update() {
         for (var id in sockets)
         {
-            players[id].update();
-            var msgs = bulletManagers[id].update(players, null, id);
-            for (var i = 0; i < msgs.length; i++)
-            {
-                broadcast(msgs[i]);
-            }
-            var msgs = skillManagers[id].update(players, null, id);
+			if (players[id]!=undefined){
+				players[id].update();
+				var msgs = bulletManagers[id].update(players, null, id);
+				for (var i = 0; i < msgs.length; i++)
+				{
+					broadcast(msgs[i]);
+				}
+				var msgs = skillManagers[id].update(players, null, id);
 
-            for (var i = 0; i < msgs.length; i++)
-            {
-                broadcast(msgs[i]);
+				for (var i = 0; i < msgs.length; i++)
+				{
+					broadcast(msgs[i]);
+				}
             }
-            ;
         }
 
     }
