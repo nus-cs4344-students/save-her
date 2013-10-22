@@ -60,6 +60,7 @@ function Server(port) {
     var http = require('http');
     var sockjs = require('sockjs');
 
+	http.globalAgent.maxSockets = 8; //maximum 8 players in a game
     var characterFac = new CharacterFactory();
     var serverSocket = sockjs.createServer();
 

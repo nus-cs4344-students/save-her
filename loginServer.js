@@ -20,7 +20,9 @@ function loginServer(){
 	var express = require('express');
 	var http = require('http');
 	var sockjs = require('sockjs');
- 
+	
+	http.globalAgent.maxSockets = 20; //maximum 20 clients at any time
+	
 	serverSocket = sockjs.createServer();		
 	playerSockets = new Array();
 	players = new Object;
