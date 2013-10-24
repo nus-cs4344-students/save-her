@@ -12,8 +12,25 @@ global.nextPort = function(){
 	global.GAMEPORT= 5001;
 }
 
+// simulated latency between client and server (implemented on client side)
+// note that even if delay = 0, due to processing speed (i think), latency is non-zero
+global.delay = 0;
+global.percentageJitter = 20;
+
+// retrieved from Player in Pong
+global.getDelay = function() {
+    var to = delay + percentageJitter*delay/100;
+    var from = delay - percentageJitter*delay/100;
+    if (delay != 0) {
+        return Math.floor(Math.random() * (to - from + 1) + from);
+    } else {
+        return 0;
+    }
+}
+
 // use with CHARACTERTYPE.PUMPKIN and so on
 global.CHARACTERTYPE = new Enum("PUMPKIN", "MUSHROOM", "HUMAN", "DEVIL");
+global.SKILLTYPE = new Enum("POWERFIRE","AOE","STUN","LANDMINE");
 
 // switch to debug mode to display collision rectangles
 global.DEBUGMODE = false;
@@ -25,6 +42,7 @@ global.CHARACTERMOVEMENTSPEED = 6;
 global.CHARACTERJUMPSPEED = 12;
 global.CHARACTERMAXFALLSPEED = 12;
 global.CHARACTERJUMPGRAVITATIONALPULL = 3;	// higher = less pull
+global.NUMFRAMESTOINTERPOLATE = 3;
 
 global.ISSERVER = true;
 

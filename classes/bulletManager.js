@@ -11,9 +11,9 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
     var isServer = isS;
     var speed = 20;
     var dmg = 5;
-    var normalBulletPath = "sprites/bullet.png";
-    var powerBulletPath = "sprites/pbullet.png";
-    var bulletPath = "sprites/bullet.png";
+    var normalBulletPath = "bullet.png";
+    var powerBulletPath = "pbullet.png";
+    var bulletPath = "bullet.png";
     this.setIsMine = function(isMe) {
         that.isMine = isMe;
     }

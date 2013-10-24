@@ -227,7 +227,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 mineLeft--;
                 if (isMine)
                 {
-                    var texture = PIXI.Texture.fromImage("sprites/mine.png");
+                    var texture = PIXI.Texture.fromImage("mine.png");
                     var mine = new PIXI.Sprite(texture);
                     mine.position.x = x;
                     mine.position.y = y;
@@ -242,7 +242,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 if (!isServer)
                 {
                     //AOE texture
-                    var texture = PIXI.Texture.fromImage("sprites/aoe.png");
+                    var texture = PIXI.Texture.fromImage("AOE.png");
                     aoe = new PIXI.Sprite(texture);
                     aoe.position.x = x - aoeRadius;
                     aoe.position.y = y - aoeRadius;
@@ -262,7 +262,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 if (!isServer)
                 {
 
-                    var texture = PIXI.Texture.fromImage("sprites/stun.png");
+                    var texture = PIXI.Texture.fromImage("STUN.png");
                     stun = new PIXI.Sprite(texture);
                     stun.position.x = x - stunRadius;
                     stun.position.y = y - stunRadius;

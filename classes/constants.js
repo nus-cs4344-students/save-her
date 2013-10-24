@@ -16,9 +16,14 @@ var sendToServer = function(msg) {
         socket.send(JSON.stringify(msg));
 }
 
+// accelerometer controls
+var tiltRight = false;
+var tiltLeft = false;
+
 // use with CHARACTERTYPE.PUMPKIN and so on
 var CHARACTERTYPE = new Enum("PUMPKIN", "MUSHROOM", "HUMAN", "DEVIL");
 var SKILLTYPE = new Enum("POWERFIRE","AOE","STUN","LANDMINE");
+
 // switch to debug mode to display collision rectangles
 var DEBUGMODE = false;
 
@@ -29,6 +34,8 @@ var CHARACTERMOVEMENTSPEED = 6;
 var CHARACTERJUMPSPEED = 12;
 var CHARACTERMAXFALLSPEED = 12;
 var CHARACTERJUMPGRAVITATIONALPULL = 3;	// higher = less pull
+var NUMFRAMESTOINTERPOLATE = 3;
+var INTERPOLATETHRESHOLD = 20;          // amount of gap until the client decides to interpolate
 
 var ISSERVER = false;
 

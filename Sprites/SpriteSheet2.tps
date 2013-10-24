@@ -112,8 +112,6 @@
         </struct>
         <key>dataFileName</key>
         <filename>../PIXI/SpriteSheet2.json</filename>
-        <key>multiPack</key>
-        <false/>
         <key>mainExtension</key>
         <string></string>
         <key>forceIdenticalLayout</key>
@@ -290,6 +288,10 @@
             <filename>herPumpkin0000.png</filename>
             <filename>herPumpkin0001.png</filename>
             <filename>herPumpkin0002.png</filename>
+            <filename>STUN.png</filename>
+            <filename>pbullet.png</filename>
+            <filename>mine.png</filename>
+            <filename>AOE.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

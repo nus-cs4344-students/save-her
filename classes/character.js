@@ -15,6 +15,9 @@ function Character(){
 	// this character belongs to this client
 	var isMine = true;
 
+	// sequence number for labelling xSpeed packets (each character has its own)
+	var speedXSeqNo = 0;
+
 	// for display (client only)
 	var stage = stage;
 	var spriteMovieClip;
@@ -39,9 +42,12 @@ function Character(){
 
 	var faceRight = true;	// whether character is facing right
 
-	// other players only, interpolating gradually to desired pos
-	var interpolatePosX = posX;
-	var interpolatePosY = posY;
+	// other players only, interpolating gradually based on difference
+	var interpolateValidityX = 0;	// how many more frames to interpolate
+	var interpolateAmtX = 0;		// amount to interpolate for each frame
+	var interpolateValidityY = 0;
+	var interpolateAmtY = 0;
+	var minHeight = 99999;
 
 	var inAir = false;
 	var isDead = false;
@@ -61,11 +67,11 @@ function Character(){
 			spriteMovieClip.scale.x = spriteMovieClip.scale.y = 2;
 			spriteMovieClip.position.x = posX;
 			if(typeArg == CHARACTERTYPE.DEVIL)
-				spriteMovieClip.position.y = posY + 5;
+				spriteMovieClip.position.y = posY + 32 + 5;
 			else
-				spriteMovieClip.position.y = posY;
+				spriteMovieClip.position.y = posY + 32;
 			spriteMovieClip.anchor.x = 0.5;
-			spriteMovieClip.anchor.y = 0.5;
+			spriteMovieClip.anchor.y = 1.0;
 			setAnimation("Walk");
 			spriteMovieClip.play();
 			stage.addChild(spriteMovieClip);
@@ -84,31 +90,26 @@ function Character(){
 
 	this.setIsMine = function(isMe){
 		isMine = isMe;
-
-		if(isMe){
-			// send own position periodically (if any change)
-			setInterval(function(){
-				if(posX != lastposX || posY != lastpoxY){
-					sendToServer({type:"pos", x: posX, y: posY});
-					lastposX = posX;
-					lastpoxY = posY;
-				}
-			}, 500);
-
-			// force update position
-			setInterval(function(){
-				sendToServer({type:"posForce", x: posX, y: posY});
-				lastposX = posX;
-				lastpoxY = posY;
-			}, 2800);
-		}
 	}
 
+	var firstUpdate = true;
 	this.update = function(){
-		horizontalMovementUpdate();
+
+		var updateServer = horizontalMovementUpdate();
 		verticalMovementUpdate();
+
+		if(updateServer){
+			// send input change to server
+			if(!ISSERVER && isMine){
+				speedXSeqNo++;
+				sendToServer({type:"speedX", SpeedX: remoteSpeedX, PosX: posX, Seq: speedXSeqNo});
+				console.log({type:"speedX", SpeedX: remoteSpeedX, PosX: posX, Seq: speedXSeqNo});
+			}
+		}
+
+		if(!isMine) interpolateUpdate();
+
 		move(speedX, speedY);
-		if(!isMine) interpolate();
 
 		// debug
 		if(!ISSERVER && isMine){
@@ -117,6 +118,12 @@ function Character(){
 				that.hurt(20);
 			if(containsArray(keys, 'd'))
 				die();
+		}
+
+		// initialise initial position
+		if(firstUpdate){
+			that.setPosition(225,415);
+			firstUpdate = false;
 		}
 	}
 
@@ -160,11 +167,16 @@ function Character(){
 			} else {
 
 				for(var i=0; i<mapRects.length; i++){
-					while(floorDetector.isIntersecting(mapRects[i])){	// colliding, push
-						moveBlindlyY(-1);
-						inAir = false;
-						speedY = 0;	
+
+					var landed = false;
+
+					while(floorDetector.isIntersecting(mapRects[i])){
+						moveBlindlyY(-1); // colliding, push
+						landed = true;
 					}
+
+					if(landed)
+						that.land();
 				}
 
 			}
@@ -249,6 +261,12 @@ function Character(){
 		bodyDetector.moveX(deltaX);
 	}
 
+	// move instantly to x
+	var teleportToX = function(x){
+		var deltaX = x - posX;
+		moveBlindlyX(deltaX);
+	}
+
 	// simply move vertically, check should be done in move function
 	var moveBlindlyY = function(deltaY){
 		if(!ISSERVER) spriteMovieClip.position.y += deltaY;
@@ -261,12 +279,23 @@ function Character(){
 		bodyDetector.moveY(deltaY);
 	}
 
+	// move instantly to y
+	var teleportToY = function(y){
+		var deltaY = y - posY;
+		moveBlindlyY(deltaY);
+	}
+
+	// returns true if player changes arrow keys
+	// means has to send to server the new input
 	var holdingKey = [];
+	var remoteSpeedX = 0;
 	var horizontalMovementUpdate = function(){
 		if(!ISSERVER && isMine && !stopInput){
 			var keys = KeyboardJS.activeKeys();
 
 			var leftDown, rightDown;
+
+			// keyboard controls
 			for(var i=0; i<keys.length; i++){
 				switch(keys[i]){
 					case 'left':
@@ -278,35 +307,57 @@ function Character(){
 				}
 			}
 
-			// store CHANGE IN speed in horizontal direction
-			var deltaSpeedX = 0;
+			// accelerometer controls
+			if(tiltRight) rightDown = true;
+			if(tiltLeft) leftDown = true;
+			tiltLeft = false;
+			tiltRight = false;
+			
+			var inputChanged = false;
+			remoteSpeedX = 0;
 
 			// just pressed left
 			if(leftDown && !holdingKey['left']){
 				holdingKey['left'] = true;
-				deltaSpeedX -= CHARACTERMOVEMENTSPEED;
+				inputChanged = true;
 			}
 
 			// released left
 			if(!leftDown && holdingKey['left']){
 				holdingKey['left'] = false;
-				deltaSpeedX += CHARACTERMOVEMENTSPEED;
+				inputChanged = true;
 			}
 
 			// just pressed right
 			if(rightDown && !holdingKey['right']){
 				holdingKey['right'] = true;
-				deltaSpeedX += CHARACTERMOVEMENTSPEED;
+				inputChanged = true;
 			}
 
 			// released left
 			if(!rightDown && holdingKey['right']){
 				holdingKey['right'] = false;
-				deltaSpeedX -= CHARACTERMOVEMENTSPEED;
+				inputChanged = true;
 			}
 
-			that.setSpeedX(speedX + deltaSpeedX);
+			// update XSpeed (note that there is no acceleration for remote side)
+			if(holdingKey['right']){
+				remoteSpeedX = CHARACTERMOVEMENTSPEED;
+				speedX = Math.min(speedX + 2, CHARACTERMOVEMENTSPEED);
+			}
+			else if(holdingKey['left']){
+				remoteSpeedX = -CHARACTERMOVEMENTSPEED;
+				speedX = Math.max(speedX - 2 , -CHARACTERMOVEMENTSPEED);
+			}
+			else{
+				remoteSpeedX = 0;
+				speedX = 0;
+			}
+
+			return inputChanged;
 		}
+
+		return false;
 	}
 
 	var gravityCounter = 0;
@@ -319,18 +370,22 @@ function Character(){
 			return;
 		}
 
-		// check if it is not floating in thin air
-		var goingToFall = true;
-		for(var i=0; i<mapRects.length; i++){
-			if(hoverDetector.isIntersecting(mapRects[i])){
-				goingToFall = false;
-				break;
+		// remote cannot fall until told to do so
+		if(isMine){
+
+			// check if it is not floating in thin air
+			var goingToFall = true;
+			for(var i=0; i<mapRects.length; i++){
+				if(hoverDetector.isIntersecting(mapRects[i])){
+					goingToFall = false;
+					break;
+				}
 			}
-		}
-		if(goingToFall){
-			inAir = true;
-			gravityCounter = 0;
-			return;
+			if(goingToFall){
+				that.fall();
+				return;
+			}
+
 		}
 
 		if(!ISSERVER && isMine && !stopInput){
@@ -343,27 +398,70 @@ function Character(){
 	}
 
 	this.jump = function(){
-		inAir = true;
-		setSpeedY(-CHARACTERJUMPSPEED);
-		gravityCounter = 0;
+
+		if(!ISSERVER && isMine){
+			var shrink = setInterval(function(){
+				spriteMovieClip.scale.y -= 0.03;
+			}, 10);
+
+			setTimeout(function(){
+				spriteMovieClip.scale.y = 2;
+				inAir = true;
+				setSpeedY(-CHARACTERJUMPSPEED);
+				gravityCounter = 0;
+				clearInterval(shrink);
+			}, 100);
+		} else {
+			inAir = true;
+			setSpeedY(-CHARACTERJUMPSPEED);
+			gravityCounter = 0;
+		}
 
 		// send jump command to server
 		if(!ISSERVER && isMine){
 			playSound(jumpSound, false);
-			console.log("sent jump command");
 			sendToServer({type:"jump"});
+			console.log({type:"jump"});
+		}
+	}
+
+	this.land = function(){
+		inAir = false;
+		setSpeedY(0);
+		gravityCounter = 0;
+
+		if(!ISSERVER){
+			var shrink = setInterval(function(){
+				spriteMovieClip.scale.y -= 0.05;
+			}, 10);
+
+			setTimeout(function(){
+				spriteMovieClip.scale.y = 2;
+				clearInterval(shrink);
+			}, 100);
+		}
+
+		// send land command to server
+		if(!ISSERVER && isMine){
+			sendToServer({type:"land", PosY: posY, PosX: posX});
+			console.log({type:"land", PosY: posY, PosX: posX});
+		}
+	}
+
+	this.fall = function(){
+		inAir = true;
+		gravityCounter = 0;
+
+		// send fall command to server
+		if(!ISSERVER && isMine){
+			sendToServer({type:"fall", PosY: posY, PosX: posX});
+			console.log({type:"fall", PosY: posY, PosX: posX});
 		}
 	}
 
 	this.setSpeedX = function(newSpeedX){
 		if(speedX != newSpeedX){
 			speedX = newSpeedX;
-			
-			// send speed change to server
-			if(!ISSERVER && isMine){
-				console.log("sent speed change (x)");
-				sendToServer({type:"speedX", x: speedX});
-			}
 		}
 	}
 
@@ -382,11 +480,71 @@ function Character(){
 		return posY;
 	}
 
+	this.setPosition = function(x, y){
+		teleportToX(x);
+		teleportToY(y);
+	}
+
 	this.getSprite = function(){
 		return spriteMovieClip;
 	}
 
-	var interpolateValidity = 0;
+	// start interpolating to reduce difference in position x
+	var lastKnownX;
+	this.startInterpolateX = function(x, force){
+		lastKnownX = x;
+		var deltaX = x - posX;
+
+		// check if possible to interpolate without looking like it's doing so
+		var smoothInterpolation = CHARACTERMOVEMENTSPEED >= Math.abs(deltaX / NUMFRAMESTOINTERPOLATE);
+		
+		// check if interpolation will make it look like it's moving backwards
+		var moveForward = (deltaX < 0 && !faceRight) || (deltaX > 0 && faceRight);
+
+		if(force || Math.abs(deltaX) > 20 || (smoothInterpolation && moveForward)){
+			console.log("InterpolatedX");
+			interpolateAmtX = deltaX / NUMFRAMESTOINTERPOLATE;
+			interpolateValidityX = NUMFRAMESTOINTERPOLATE;
+		}
+	}
+
+	// start interpolating to reduce difference in position y
+	var lastKnownY;
+	this.startInterpolateY = function(y, force){
+		lastKnownY = y;
+		var deltaY = y - posY;
+
+		if(force || Math.abs(deltaY) > 20){
+
+			that.startInterpolateX(lastKnownX, true);
+
+			console.log("InterpolatedY");
+			interpolateAmtY = deltaY / NUMFRAMESTOINTERPOLATE;
+			interpolateValidityY = NUMFRAMESTOINTERPOLATE;
+		}
+	}
+
+	var interpolateUpdate = function(){
+
+		// horizontal component
+		if(interpolateValidityX > 0){
+			interpolateValidityX--;
+			moveBlindlyX(interpolateAmtX);
+			if(interpolateValidityX == 0)
+				interpolateAmtX = 0;
+		}
+
+		// vertical component
+		if(interpolateValidityY > 0){
+			setSpeedY(0);
+			interpolateValidityY--;
+			moveBlindlyY(interpolateAmtY);
+			if(interpolateValidityY == 0)
+				interpolateAmtY = 0;
+		}
+	}
+
+	/*var interpolateValidity = 0;
 	var interpolate = function(){
 
 		interpolateValidity--;
@@ -438,7 +596,7 @@ function Character(){
 		interpolatePosX = x;
 		interpolatePosY = y;
 		interpolateValidity = 10;
-	}
+	}*/
 
 	var die = function(){
 		that.lives--;
@@ -502,20 +660,49 @@ function Character(){
 		
 		return true;
 	}
-        this.stun = function(time){
-            //@HONGWEI please add the stun function
-            console.log("stunned");
-        }
+	
 	// return if collided with rectangle
 	this.isColliding = function(rectangle){
 		return (bodyDetector.isIntersecting(rectangle));
 	}
-        this.isCollidingCircle = function(x,y,r){
-            return bodyDetector.isIntersectingCircle(x,y,r);
-        }
+
+    this.isCollidingCircle = function(x,y,r){
+        return bodyDetector.isIntersectingCircle(x,y,r);
+    
+    }
 	this.isFacingRight = function(){
 		return faceRight;
 	}
+
+	this.isObsolete = function(seqNo){
+		if(seqNo > speedXSeqNo){
+			speedXSeqNo = seqNo;
+			return false;
+		}
+		return true;
+	}
+
+    this.stun = function(time){
+    	stopInput = true;
+    	console.log("stunned");
+
+        setTimeout(function(){
+        	stopInput = false;
+        	console.log("unstunned");
+        }, time);
+    }
+
+    this.stunOn = function(){
+    	stopInput = true;
+    }
+
+    this.stunOff = function(){
+    	stopInput = false;
+    }
+
+    this.isStunned = function(){
+    	return stopInput;
+    }
 
 }
 

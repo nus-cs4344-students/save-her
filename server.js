@@ -75,64 +75,76 @@ function Server(port) {
 
             sockets[socket.id] = socket;
 
-
             // on receiving something from client
             socket.on("data", function(e) {
-                console.log(e);
 
-                var broadcast = false;
-                var message = JSON.parse(e);
-                switch (message.type) {
-                    case "newPlayer":
-                        console.log("new game player");
-                        characters[socket.id] = message.characterType;
-                        players[socket.id] = characterFac.createCharacter(null, message.characterType, false);
-                        bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
-                        skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id],false, true);
-                        // broadcast current players with the new player
-                        broadcastRestWithPlayerID(socket, {type: "newPlayer", characterType: message.characterType})
-                    case "posForce":
-                        var player = players[socket.id];
-                        players[socket.id].interpolateTo(message.x, message.y);
-                        broadcast = true;
-                        break;
-                    case "pos":
-                        var player = players[socket.id];
-                        var diffX = Math.abs(player.getPosX() - message.x);
-                        var diffY = Math.abs(player.getPosY() - message.y);
-                        if (diffX > 200 || diffY > 200) {
-                            players[socket.id].interpolateTo(message.x, message.y);
+                setTimeout(function(){
+                    console.log(e);
+
+                    var broadcast = false;
+                    var message = JSON.parse(e);
+                    switch (message.type) {
+
+                        case "newPlayer":
+                            console.log("new game player");
+                            characters[socket.id] = message.characterType;
+                            players[socket.id] = characterFac.createCharacter(null, message.characterType, false);
+                            bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
+                            skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id],false, true);
+
+                        case "jump":
+                            players[socket.id].jump();
                             broadcast = true;
-                        }
-                        break;
-                    case "jump":
-                        players[socket.id].jump();
-                        broadcast = true;
-                        break;
-                    case "speedX":
-                        players[socket.id].setSpeedX(message.x);
-                        broadcast = true;
-                        break;
-                    case "shoot":
-                        bulletManagers[socket.id].setDir(message.dir);
-                        bulletManagers[socket.id].shoot();
-                        broadcast = true;
-                        break;
-                    case "skill":
-                        //use the accurate position
-                        if (players[socket.id].characterType == CHARACTERTYPE.PUMPKIN)
-                            skillManagers[socket.id].serverMine(message.x, message.y);
-                        else
-                            skillManagers[socket.id].skill();
-                        broadcast = true;
-                        break;
-                }
+                            break;
 
-                var id;
+                        // landed from a fall
+                        case "land":
+                            players[socket.id].startInterpolateX(message.PosX);
+                            players[socket.id].startInterpolateY(message.PosY);
+                            broadcast = true;
+                            break;
 
-                // broadcast to all other players
-                if (broadcast)
-                    broadcastRestWithPlayerID(socket, message);
+                        // fall when hovering over nothing
+                        case "fall":
+                            players[socket.id].setPosition(message.PosX, message.PosY);
+                            players[socket.id].fall();
+                            broadcast = true;
+                            break;
+
+                        case "speedX":
+                            if(!players[socket.id].isObsolete(message.Seq)){
+                                players[socket.id].setSpeedX(message.SpeedX);
+                                players[socket.id].startInterpolateX(message.PosX);
+                                broadcast = true;
+                            }
+                            break;
+
+                        case "shoot":
+                            bulletManagers[socket.id].setDir(message.dir);
+                            bulletManagers[socket.id].shoot();
+                            broadcast = true;
+                            break;
+
+                        case "skill":
+                            //use the accurate position
+                            if (players[socket.id].characterType == CHARACTERTYPE.PUMPKIN)
+                                skillManagers[socket.id].serverMine(message.x, message.y);
+                            else
+                                skillManagers[socket.id].skill();
+                            broadcast = true;
+                            break;
+                    }
+
+                    var id;
+
+                    // broadcast to all other players
+                    if (broadcast){
+                        setTimeout(function(){
+                            broadcastRestWithPlayerID(socket, message);
+                        }, getDelay());
+                    }
+
+                }, getDelay());
             });
         } catch (e) {
             console.log("Error: " + e);

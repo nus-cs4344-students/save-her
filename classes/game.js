@@ -58,6 +58,14 @@ function Game(s,m,c,p){
 		// initialise FX
 		initFX(camera);
 
+		// initialise mobile controls (retrieved from Pong)
+       	window.addEventListener("devicemotion", function(e) {
+            onDeviceMotion(e);
+        }, false);
+        window.ondevicemotion = function(e) {
+            onDeviceMotion(e);
+        }
+
 		// start animating
 		requestAnimFrame( animate );
 
@@ -202,17 +210,6 @@ function Game(s,m,c,p){
 					case 3:
 						herPositionX = j*TILEHEIGHT;
 						herPositionY = i*TILEHEIGHT;
-						/*var herTextures = [];
-						for(var k=0; k<4; k++)
-							herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
-						her = new PIXI.MovieClip(herTextures);
-						her.position.x = j*TILEWIDTH;
-						her.position.y = i*TILEHEIGHT;
-						her.width = TILEWIDTH;
-						her.height = TILEHEIGHT;
-						her.animationSpeed = 0.1;
-						her.play();
-						*/
 						var herBubble = new PIXI.Sprite(PIXI.Texture.fromFrame("savemebubble.png"));
 						herBubble.position.x = j*TILEWIDTH + 40;
 						herBubble.position.y = i*TILEHEIGHT + 8;
@@ -236,41 +233,50 @@ function Game(s,m,c,p){
 		var herTextures = [];
 		switch(player_char){
 			case "pompkin":
-				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
-				player_char = CHARACTERTYPE.PUMPKIN;
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herPumpkin000" + k + ".png"));
+				her = new PIXI.MovieClip(herTextures);
+				camera.addChild(her);
+				camera.addChild(herBubble);
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
+				player_char = CHARACTERTYPE.PUMPKIN;
 				break;
 			case "shroom":
-				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.MUSHROOM, true);
-				player_char = CHARACTERTYPE.MUSHROOM;
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herMushroom000" + k + ".png"));
+				her = new PIXI.MovieClip(herTextures);
+				camera.addChild(her);
+				camera.addChild(herBubble);
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.MUSHROOM, true);
+				player_char = CHARACTERTYPE.MUSHROOM;
 				break;
 			case "human":
-				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.HUMAN, true);
-				player_char = CHARACTERTYPE.HUMAN;
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
+				her = new PIXI.MovieClip(herTextures);
+				camera.addChild(her);
+				camera.addChild(herBubble);
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.HUMAN, true);
+				player_char = CHARACTERTYPE.HUMAN;
 				break;
 			case "devilz":
-				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.DEVIL, true);
-				player_char = CHARACTERTYPE.DEVIL;
 				for(var k=0; k<4; k++)
 					herTextures.push(PIXI.Texture.fromFrame("herDevil000" + k + ".png"));
+				her = new PIXI.MovieClip(herTextures);
+				camera.addChild(her);
+				camera.addChild(herBubble);
+				ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.DEVIL, true);
+				player_char = CHARACTERTYPE.DEVIL;
 				break;
 		}
 
 		// initialise her
-		her = new PIXI.MovieClip(herTextures);
 		her.position.x = herPositionX;
 		her.position.y = herPositionY;
 		her.width = TILEWIDTH;
 		her.height = TILEHEIGHT;
 		her.animationSpeed = 0.1;
 		her.play();
-		camera.addChild(her);
-		camera.addChild(herBubble);
 
 		// initialise bullet manager
 		ownBulletManager = new BulletManager(camera, ownCharacter,true, false);
@@ -291,7 +297,7 @@ function Game(s,m,c,p){
 
 		// on receiving a message from server
 		socket.onmessage = function(e){
-			console.log("from Server : " + e.data);
+			//console.log("from Server : " + e.data);
 
 			var message = JSON.parse(e.data);
 
@@ -308,47 +314,62 @@ function Game(s,m,c,p){
 					addPlayerGUI(stage);
 					break;
 
-				// update position
-				case "pos": case "posForce":
-					characters[message.playerID].interpolateTo(message.x, message.y);
-					break;
-
 				// do a jump
 				case "jump":
 					characters[message.playerID].jump();
 					break;
 
+				// landed from a fall
+				case "land":
+					characters[message.playerID].startInterpolateX(message.PosX);
+					characters[message.playerID].startInterpolateY(message.PosY);
+					break;
+
+				// fall when hovering over nothing
+				case "fall":
+					characters[message.playerID].setPosition(message.PosX, message.PosY);
+					characters[message.playerID].fall();
+					break;
+
 				// change velocity in horizontal component
 				case "speedX":
-					characters[message.playerID].setSpeedX(message.x);
+					if(!characters[message.playerID].isObsolete(message.Seq)){
+						characters[message.playerID].setSpeedX(message.SpeedX);
+						characters[message.playerID].startInterpolateX(message.PosX);
+					}
 					break;
+
 				case "shoot":
 					bulletManagers[message.playerID].setDir(message.dir);
 					bulletManagers[message.playerID].shoot();
 					break;
+
 				case "hurt":
 					if(typeof(characters[message.p2])!="undefined")
 						characters[message.p2].hurt(message.dmg);
 					else
 						ownCharacter.hurt(message.dmg);
 					break;
-                                case "mineHurt":
-							if(typeof(characters[message.p1])=="undefined")
-								ownSkillManager.removeMine(message.mineId);
-							if(typeof(characters[message.p2])!="undefined")
-								characters[message.p2].hurt(message.dmg);
-							else
-								ownCharacter.hurt(message.dmg);
-							break;
-						case "skill":
-							skillManagers[message.playerID].skill();
-							break;
-						case "stun":
-							if(typeof(characters[message.p2])!="undefined")
-								characters[message.p2].stun(message.time);
-							else
-								ownCharacter.stun(message.time);
-							break;
+
+                case "mineHurt":
+					if(typeof(characters[message.p1])=="undefined")
+						ownSkillManager.removeMine(message.mineId);
+					if(typeof(characters[message.p2])!="undefined")
+						characters[message.p2].hurt(message.dmg);
+					else
+						ownCharacter.hurt(message.dmg);
+					break;
+
+				case "skill":
+					skillManagers[message.playerID].skill();
+					break;
+
+				case "stun":
+					if(typeof(characters[message.p2])!="undefined")
+						characters[message.p2].stun(message.time);
+					else
+						ownCharacter.stun(message.time);
+					break;
 			}
 
 		}
@@ -398,6 +419,20 @@ function Game(s,m,c,p){
 				break;
 		}
 	}
+
+	var prevVx = 0;
+    var onDeviceMotion = function(e) {
+        var vx = e.accelerationIncludingGravity.x;
+        if (vx - prevVx > 0.1){
+			tiltLeft = true;
+        }
+
+        if(prevVx - vx > 0.1) {
+            tiltRight = true;
+        }
+
+        prevVx = vx;
+    }
 
 }
 

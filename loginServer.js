@@ -111,6 +111,7 @@ function loginServer(){
 								type:"new_player",
 								playerID:playerID};
 							unicast(playerSockets[playerID],pInfo);
+
 							break;
 						case "relog_player":
 							if (isExists(message.playerID) && !isConnected(message.playerID)){
