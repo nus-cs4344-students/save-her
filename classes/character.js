@@ -501,7 +501,7 @@ function Character(){
 		// check if interpolation will make it look like it's moving backwards
 		var moveForward = (deltaX < 0 && !faceRight) || (deltaX > 0 && faceRight);
 
-		if(force || Math.abs(deltaX) > 20 || (smoothInterpolation && moveForward)){
+		if(force || Math.abs(deltaX) > INTERPOLATETHRESHOLD || (smoothInterpolation && moveForward)){
 			console.log("InterpolatedX");
 			interpolateAmtX = deltaX / NUMFRAMESTOINTERPOLATE;
 			interpolateValidityX = NUMFRAMESTOINTERPOLATE;
@@ -514,7 +514,7 @@ function Character(){
 		lastKnownY = y;
 		var deltaY = y - posY;
 
-		if(force || Math.abs(deltaY) > 20){
+		if(force || Math.abs(deltaY) > INTERPOLATETHRESHOLD){
 
 			that.startInterpolateX(lastKnownX, true);
 

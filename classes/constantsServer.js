@@ -43,6 +43,7 @@ global.CHARACTERJUMPSPEED = 12;
 global.CHARACTERMAXFALLSPEED = 12;
 global.CHARACTERJUMPGRAVITATIONALPULL = 3;	// higher = less pull
 global.NUMFRAMESTOINTERPOLATE = 3;
+global.INTERPOLATETHRESHOLD = 20;          // amount of gap until interpolated
 
 global.ISSERVER = true;
 
