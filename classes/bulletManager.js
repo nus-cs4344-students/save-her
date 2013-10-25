@@ -139,13 +139,18 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 dir = 1;
         }
     }
-    this.powerUp = function(){
+
+    // hongwei - added effect parameter so it can be removed
+    this.powerUp = function(effect){
         bulletPath = powerBulletPath;
         dmg = 10;
+        var fx = effect;
         
         setTimeout(function(){
             bulletPath = normalBulletPath;
             dmg = 5;
+            if(!ISSERVER)
+                stage.removeChild(fx);
         },10000);
     }
     this.setDir = function(dirA) {

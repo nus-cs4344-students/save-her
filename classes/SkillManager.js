@@ -9,6 +9,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
     var isServer = isS;
     var aoe = null;
     var stun = null;
+    var superSaiyan = null;
 
     //for client
     var mines = [];
@@ -144,6 +145,15 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
 
         // console.log(bullets.length);
         switch (player.characterType) {
+
+            // HongWei - update FX to follow player
+            case CHARACTERTYPE.HUMAN:
+                if(superSaiyan != undefined){
+                    superSaiyan.position.x = player.getPosX();
+                    superSaiyan.position.y = player.getPosY();
+                }
+
+                break;
             case CHARACTERTYPE.PUMPKIN:
                 //landmine
 
@@ -220,18 +230,40 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
         switch (player.characterType) {
             case CHARACTERTYPE.HUMAN:
                 //rapid shoot
-                that.ownBulletManger.powerUp();
+                if (!isServer)
+                {
+                    //Super saiyan effect
+                    var superSaiyanFX = [];
+                    for (var i=0; i < 3; i++)
+                        superSaiyanFX.push(PIXI.Texture.fromFrame("anger" + (i+1) + ".png"));
+                    superSaiyan = new PIXI.MovieClip(superSaiyanFX);
+                    superSaiyan.anchor.x = 0.5;
+                    superSaiyan.anchor.y = 0.5;
+                    superSaiyan.scale.x *= 2;
+                    superSaiyan.scale.y *= 2;
+                    superSaiyan.position.x = x;
+                    superSaiyan.position.y = y;
+                    superSaiyan.animationSpeed = 0.6;
+                    stage.addChild(superSaiyan);
+                    superSaiyan.play()
+                }
+                that.ownBulletManger.powerUp(superSaiyan);
                 break;
             case CHARACTERTYPE.PUMPKIN:
                 //landmine, only myself can see
                 mineLeft--;
-                if (isMine)
-                {
-                    var texture = PIXI.Texture.fromImage("mine.png");
-                    var mine = new PIXI.Sprite(texture);
+                if (isMine){
+                    var mineTextures = [];
+                    for (var i=0; i < 8; i++)
+                        mineTextures.push(PIXI.Texture.fromFrame("bomb000" + (i) + ".png"));
+                    var mine = new PIXI.MovieClip(mineTextures);
+                    mine.anchor.x = 0;
+                    mine.anchor.y = 0.2;
+                    mine.scale.x *= 2;
+                    mine.scale.y *= 2;
                     mine.position.x = x;
                     mine.position.y = y;
-                    mines.push(mine);
+                    mine.play();
                     stage.addChild(mine);
                 }
                 minesX.push(x);
@@ -261,19 +293,33 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 //stun
                 if (!isServer)
                 {
-
-                    var texture = PIXI.Texture.fromImage("STUN.png");
-                    stun = new PIXI.Sprite(texture);
-                    stun.position.x = x - stunRadius;
-                    stun.position.y = y - stunRadius;
-
+                    var stunTextures = [];
+                    stunTextures.push(PIXI.Texture.fromFrame("STUNwhite.png"));
+                    stunTextures.push(PIXI.Texture.fromFrame("STUN.png"));
+                    var stun = new PIXI.MovieClip(stunTextures);
+                    stun.anchor.x = 0.5;
+                    stun.anchor.y = 0.5;
+                    stun.scale.x *= 2;
+                    stun.scale.y *= 2;
+                    stun.position.x = x;
+                    stun.position.y = y;
+                    stun.loop = false;
+                    stun.animationSpeed = 0.2;
+                    stun.gotoAndPlay (0);
                     stage.addChild(stun);
                 }
                 stunOn = true;
 
                 setTimeout(function() {
-                    if (!isServer)
-                        stage.removeChild(stun);
+                    if (!isServer){
+                        var fadeOut = setInterval(function(){
+                            stun.alpha -= 0.1;
+                            if(stun.alpha <= 0){
+                                stage.removeChild(stun);
+                                clearInterval(fadeOut);
+                            }
+                        }, 10);
+                    }
                     stunOn = false;
                 }, 1000);
                 break;

@@ -112,6 +112,8 @@
         </struct>
         <key>dataFileName</key>
         <filename>../PIXI/SpriteSheet2.json</filename>
+        <key>multiPack</key>
+        <false/>
         <key>mainExtension</key>
         <string></string>
         <key>forceIdenticalLayout</key>
@@ -292,6 +294,18 @@
             <filename>pbullet.png</filename>
             <filename>mine.png</filename>
             <filename>AOE.png</filename>
+            <filename>../../anger3.png</filename>
+            <filename>../../anger1.png</filename>
+            <filename>../../anger2.png</filename>
+            <filename>bomb0000.png</filename>
+            <filename>bomb0001.png</filename>
+            <filename>bomb0002.png</filename>
+            <filename>bomb0003.png</filename>
+            <filename>bomb0004.png</filename>
+            <filename>bomb0005.png</filename>
+            <filename>bomb0006.png</filename>
+            <filename>bomb0007.png</filename>
+            <filename>STUNwhite.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
