@@ -45,8 +45,10 @@ function bullet(stageArg, init_x, init_y, speed, path, isS, dmg) {
         if (that.ttl > 0)
             that.ttl--;
 
-        for (var i = 0; i < mapRects.length; i++)
-            if (wallDetector.isIntersecting(mapRects[i]))
+        var relevantRects = getRelevantRectangles(x, y);
+
+        for (var i = 0; i < relevantRects.length; i++)
+            if (wallDetector.isIntersecting(relevantRects[i]))
             {
                 that.ttl = 0;
                 break;

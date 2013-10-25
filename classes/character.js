@@ -103,7 +103,7 @@ function Character(){
 			if(!ISSERVER && isMine){
 				speedXSeqNo++;
 				sendToServer({type:"speedX", SpeedX: remoteSpeedX, PosX: posX, Seq: speedXSeqNo});
-				console.log({type:"speedX", SpeedX: remoteSpeedX, PosX: posX, Seq: speedXSeqNo});
+				//console.log({type:"speedX", SpeedX: remoteSpeedX, PosX: posX, Seq: speedXSeqNo});
 			}
 		}
 
@@ -130,11 +130,13 @@ function Character(){
 	// move and check for collision
 	var move = function(deltaX, deltaY){
 
+		var relevantRects = getRelevantRectangles(posX, posY);
+
 		// horizontal component
 		if(deltaX != 0) {
 			moveBlindlyX(deltaX);
-			for(var i=0; i<mapRects.length; i++){
-				while(wallDetector.isIntersecting(mapRects[i])){	// colliding, push
+			for(var i=0; i<relevantRects.length; i++){
+				while(wallDetector.isIntersecting(relevantRects[i])){	// colliding, push
 					if(deltaX > 0)
 						moveBlindlyX(-1);
 					else
@@ -158,19 +160,19 @@ function Character(){
 			moveBlindlyY(deltaY);
 
 			if(deltaY < 0){
-				for(var i=0; i<mapRects.length; i++){
-					while(headDetector.isIntersecting(mapRects[i])){	// colliding, push
+				for(var i=0; i<relevantRects.length; i++){
+					while(headDetector.isIntersecting(relevantRects[i])){	// colliding, push
 						moveBlindlyY(1);
 						speedY = 0;	
 					}
 				}
 			} else {
 
-				for(var i=0; i<mapRects.length; i++){
+				for(var i=0; i<relevantRects.length; i++){
 
 					var landed = false;
 
-					while(floorDetector.isIntersecting(mapRects[i])){
+					while(floorDetector.isIntersecting(relevantRects[i])){
 						moveBlindlyY(-1); // colliding, push
 						landed = true;
 					}
@@ -373,10 +375,12 @@ function Character(){
 		// remote cannot fall until told to do so
 		if(isMine){
 
+			var relevantRects = getRelevantRectangles(posX, posY);
+
 			// check if it is not floating in thin air
 			var goingToFall = true;
-			for(var i=0; i<mapRects.length; i++){
-				if(hoverDetector.isIntersecting(mapRects[i])){
+			for(var i=0; i<relevantRects.length; i++){
+				if(hoverDetector.isIntersecting(relevantRects[i])){
 					goingToFall = false;
 					break;
 				}
@@ -391,13 +395,16 @@ function Character(){
 		if(!ISSERVER && isMine && !stopInput){
 			// check if going to jump
 			var keys = KeyboardJS.activeKeys();
-			if(containsArray(keys, 'space'))	// player wants to jump!
+			if(containsArray(keys, 'space') && !goingToJump)	// player wants to jump!
 				that.jump();
 			
 		}
 	}
 
+	var goingToJump = false;
 	this.jump = function(){
+
+		goingToJump = true;
 
 		if(!ISSERVER && isMine){
 			var shrink = setInterval(function(){
@@ -409,6 +416,7 @@ function Character(){
 				inAir = true;
 				setSpeedY(-CHARACTERJUMPSPEED);
 				gravityCounter = 0;
+				goingToJump = false;
 				clearInterval(shrink);
 			}, 100);
 		} else {
@@ -421,7 +429,7 @@ function Character(){
 		if(!ISSERVER && isMine){
 			playSound(jumpSound, false);
 			sendToServer({type:"jump"});
-			console.log({type:"jump"});
+			//console.log({type:"jump"});
 		}
 	}
 
@@ -444,7 +452,7 @@ function Character(){
 		// send land command to server
 		if(!ISSERVER && isMine){
 			sendToServer({type:"land", PosY: posY, PosX: posX});
-			console.log({type:"land", PosY: posY, PosX: posX});
+			//console.log({type:"land", PosY: posY, PosX: posX});
 		}
 	}
 
@@ -455,7 +463,7 @@ function Character(){
 		// send fall command to server
 		if(!ISSERVER && isMine){
 			sendToServer({type:"fall", PosY: posY, PosX: posX});
-			console.log({type:"fall", PosY: posY, PosX: posX});
+			//console.log({type:"fall", PosY: posY, PosX: posX});
 		}
 	}
 
@@ -502,7 +510,7 @@ function Character(){
 		var moveForward = (deltaX < 0 && !faceRight) || (deltaX > 0 && faceRight);
 
 		if(force || Math.abs(deltaX) > INTERPOLATETHRESHOLD || (smoothInterpolation && moveForward)){
-			console.log("InterpolatedX");
+			//console.log("InterpolatedX");
 			interpolateAmtX = deltaX / NUMFRAMESTOINTERPOLATE;
 			interpolateValidityX = NUMFRAMESTOINTERPOLATE;
 		}
@@ -518,7 +526,7 @@ function Character(){
 
 			that.startInterpolateX(lastKnownX, true);
 
-			console.log("InterpolatedY");
+			//console.log("InterpolatedY");
 			interpolateAmtY = deltaY / NUMFRAMESTOINTERPOLATE;
 			interpolateValidityY = NUMFRAMESTOINTERPOLATE;
 		}

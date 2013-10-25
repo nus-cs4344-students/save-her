@@ -159,7 +159,7 @@ function Server(port) {
     application.use(express.static(__dirname));
 }
 
-global.mapRects = [];
+global.mapRects = null;
 
 function Main() {
 
@@ -172,21 +172,15 @@ function Main() {
         setInterval(update, FRAMEDURATION);
 
         // create map
+        mapRects = createArray(map.length, map[0].length);
+        var rect;
         for (var i = 0; i < map.length; i++) {
 
-            var prev = 0;
-            var prevRect;
-
             for (var j = 0; j < map[i].length; j++) {
-                if (map[i][j] == 1) {
-                    if (prev == 1)
-                        prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
-                    else {
-                        prevRect = new Rectangle(stage, j * TILEWIDTH, i * TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
-                        mapRects.push(prevRect);
-                    }
+                if (map[i][j] == 1 || map[i][j] == 2) {
+                    rect = new Rectangle(stage, j * TILEWIDTH, i * TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+                    mapRects.push(rect);
                 }
-                prev = map[i][j];
             }
 
         }

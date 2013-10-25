@@ -10,7 +10,7 @@ var ownBulletManager;	// bullet manager
 var ownSkillManager;
 var bulletManagers = [];
 var skillManagers = [];
-var mapRects = [];		// collision rectangles for map
+var mapRects;		// collision rectangles for map
 
 var camera;
 var cameraBack;
@@ -159,13 +159,13 @@ function Game(s,m,c,p){
 		}
 
 		// generate map
+		mapRects = createArray(map.length, map[0].length);
 		var her; var herBubble; var herPositionX; var herPositionY;
+		var rect;
+
 		for(var i=0; i<map.length; i++){
-
-			var prev = 0;
-			var prevRect;
-
 			for(var j=0; j<map[i].length; j++){
+				
 				switch(map[i][j]){
 
 					case 1:
@@ -176,12 +176,8 @@ function Game(s,m,c,p){
 						tile.height = TILEHEIGHT;
 						camera.addChild(tile);
 
-						if(prev == 1 || prev == 2)
-							prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
-						else{
-							prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
-							mapRects.push(prevRect);
-						}
+						rect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+						mapRects[i][j] = rect;
 
 						var tileTop = new PIXI.Sprite(tileTopTexture);
 						tileTop.position.x = j*TILEWIDTH;
@@ -199,12 +195,8 @@ function Game(s,m,c,p){
 						tile.height = TILEHEIGHT+1;
 						camera.addChild(tile);
 
-						if(prev == 1 || prev == 2)
-							prevRect.addWidth(TILEWIDTH);		// 'merge' tiles next to each other
-						else{
-							prevRect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
-							mapRects.push(prevRect);
-						}
+						rect = new Rectangle(camera, j*TILEWIDTH, i*TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+						mapRects[i][j] = rect;
 						break;
 
 					case 3:
@@ -222,8 +214,6 @@ function Game(s,m,c,p){
 
 						break;
 				}
-
-				prev = map[i][j];
 			}
 		}
 
