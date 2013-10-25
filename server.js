@@ -179,7 +179,7 @@ function Main() {
             for (var j = 0; j < map[i].length; j++) {
                 if (map[i][j] == 1 || map[i][j] == 2) {
                     rect = new Rectangle(stage, j * TILEWIDTH, i * TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
-                    mapRects.push(rect);
+                    mapRects[i][j] = rect;
                 }
             }
 
