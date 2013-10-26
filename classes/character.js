@@ -605,7 +605,9 @@ function Character(){
 		interpolatePosY = y;
 		interpolateValidity = 10;
 	}*/
-
+        this.isDeadNow = function(){
+            return isDead;
+        }
 	var die = function(){
 		that.lives--;
 		that.HP = 0;

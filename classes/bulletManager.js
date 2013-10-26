@@ -8,6 +8,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
     this.isMine = isMine;
     var stage = stageArg;
     var player = playerArg;
+    var isStun = false;
     var isServer = isS;
     var speed = 20;
     var dmg = 5;
@@ -19,6 +20,12 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
     }
     this.getBullets = function() {
         return bullets;
+    }
+    this.stun = function(time) {
+        isStun = true;
+        setTimeout(function() {
+            isStun = false;
+        }, time);
     }
     this.detectCollision = function(players, own, id) {
         //console.log("hit!");
@@ -121,7 +128,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 that.detectCollision(players, null, null);
             }
 
-        if (that.isMine) {
+        if (that.isMine && !isStun && !player.isDeadNow()) {
             var keys = KeyboardJS.activeKeys();
             for (var i = 0; i < keys.length; i++)
             {
@@ -141,17 +148,17 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
     }
 
     // hongwei - added effect parameter so it can be removed
-    this.powerUp = function(effect){
+    this.powerUp = function(effect) {
         bulletPath = powerBulletPath;
         dmg = 10;
         var fx = effect;
-        
-        setTimeout(function(){
+
+        setTimeout(function() {
             bulletPath = normalBulletPath;
             dmg = 5;
-            if(!ISSERVER)
+            if (!ISSERVER)
                 stage.removeChild(fx);
-        },10000);
+        }, 10000);
     }
     this.setDir = function(dirA) {
         dir = dirA;
@@ -179,7 +186,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 var startY = y;
                 //console.log(x+" "+y);
 
-                var newBullet = new bullet(stage, x, y + yOffset, speed,bulletPath, isServer, dmg);
+                var newBullet = new bullet(stage, x, y + yOffset, speed, bulletPath, isServer, dmg);
 
                 //sendToServer({type:"bullet",x:x,y:y,speed:20,tex:"PIXI/bulletRight.png"});
                 bullets.push(newBullet);

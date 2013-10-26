@@ -10,7 +10,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
     var aoe = null;
     var stun = null;
     var superSaiyan = null;
-
+    var isStun = false;
     //for client
     var mines = [];
     //for server
@@ -34,7 +34,12 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
     this.setIsMine = function(isMe) {
         that.isMine = isMe;
     }
-
+    this.stun = function(time) {
+        isStun = true;
+        setTimeout(function() {
+            isStun = false;
+        }, time);
+    }
     this.detectCollision = function(players, own, id) {
         //console.log("hit!");
         var hit = false;
@@ -148,7 +153,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
 
             // HongWei - update FX to follow player
             case CHARACTERTYPE.HUMAN:
-                if(superSaiyan != undefined){
+                if (superSaiyan != undefined) {
                     superSaiyan.position.x = player.getPosX();
                     superSaiyan.position.y = player.getPosY();
                 }
@@ -176,7 +181,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
             return that.detectCollision(players, null, id);
         else
         {
-            if (that.isMine) {
+            if (that.isMine && !isStun && !player.isDeadNow()) {
                 var keys = KeyboardJS.activeKeys();
                 if (player.characterType == CHARACTERTYPE.PUMPKIN)
                 {
@@ -226,7 +231,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
 
 
         if (that.isMine)
-            sendToServer({type: "skill",x:x,y:y});
+            sendToServer({type: "skill", x: x, y: y});
         switch (player.characterType) {
             case CHARACTERTYPE.HUMAN:
                 //rapid shoot
@@ -234,8 +239,8 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 {
                     //Super saiyan effect
                     var superSaiyanFX = [];
-                    for (var i=0; i < 3; i++)
-                        superSaiyanFX.push(PIXI.Texture.fromFrame("anger" + (i+1) + ".png"));
+                    for (var i = 0; i < 3; i++)
+                        superSaiyanFX.push(PIXI.Texture.fromFrame("anger" + (i + 1) + ".png"));
                     superSaiyan = new PIXI.MovieClip(superSaiyanFX);
                     superSaiyan.anchor.x = 0.5;
                     superSaiyan.anchor.y = 0.5;
@@ -252,9 +257,9 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
             case CHARACTERTYPE.PUMPKIN:
                 //landmine, only myself can see
                 mineLeft--;
-                if (isMine){
+                if (isMine) {
                     var mineTextures = [];
-                    for (var i=0; i < 8; i++)
+                    for (var i = 0; i < 8; i++)
                         mineTextures.push(PIXI.Texture.fromFrame("bomb000" + (i) + ".png"));
                     var mine = new PIXI.MovieClip(mineTextures);
                     mine.anchor.x = 0;
@@ -264,6 +269,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                     mine.position.x = x;
                     mine.position.y = y;
                     mine.play();
+                    mines.push(mine);
                     stage.addChild(mine);
                 }
                 minesX.push(x);
@@ -305,16 +311,16 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                     stun.position.y = y;
                     stun.loop = false;
                     stun.animationSpeed = 0.2;
-                    stun.gotoAndPlay (0);
+                    stun.gotoAndPlay(0);
                     stage.addChild(stun);
                 }
                 stunOn = true;
 
                 setTimeout(function() {
-                    if (!isServer){
-                        var fadeOut = setInterval(function(){
+                    if (!isServer) {
+                        var fadeOut = setInterval(function() {
                             stun.alpha -= 0.1;
-                            if(stun.alpha <= 0){
+                            if (stun.alpha <= 0) {
                                 stage.removeChild(stun);
                                 clearInterval(fadeOut);
                             }
@@ -330,7 +336,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
         that.lastSkillTime = now;
 
     }
-    this.serverMine = function(x,y){
+    this.serverMine = function(x, y) {
         minesX.push(x);
         minesY.push(y);
         mineLeft--;

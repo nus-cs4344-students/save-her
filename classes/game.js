@@ -356,9 +356,17 @@ function Game(s,m,c,p){
 
 				case "stun":
 					if(typeof(characters[message.p2])!="undefined")
-						characters[message.p2].stun(message.time);
+					{
+                                            characters[message.p2].stun(message.time);
+                                            bulletManagers[message.p2].stun(message.time);
+                                            skillManagers[message.p2].stun(message.time);
+                                        }
 					else
-						ownCharacter.stun(message.time);
+					{
+                                            ownCharacter.stun(message.time);
+                                            ownSkillManager.stun(message.time);
+                                            ownBulletManager.stun(message.time);
+                                        }
 					break;
 			}
 
