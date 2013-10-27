@@ -47,7 +47,7 @@ function Game(s,m,c,p){
 		var backGUI = new PIXI.DisplayObjectContainer();
 		stage.addChild(backGUI);
 
-		initGameGUI(stage);
+
 
 		// initialise game camera
 		cameraBack = new PIXI.DisplayObjectContainer();
@@ -76,6 +76,8 @@ function Game(s,m,c,p){
 		var tileTopTexture;
 		var tileBottomTexture;
 
+        //initialise GUI
+        initGameGUI(stage);
 		// render backdrop
 		switch(mapType){
 
