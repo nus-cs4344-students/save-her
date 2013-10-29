@@ -67,7 +67,6 @@ function bullet(stageArg, init_x, init_y, speed, path, isS, dmg) {
         {
             createBulletExplodeFX(b.position.x, b.position.y);
             createHurtFX(b.position.x, b.position.y);
-            console.log("ASD");
 
             stage.removeChild(b);
             wallDetector.destroy();

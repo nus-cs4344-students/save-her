@@ -346,10 +346,14 @@ function Game(s,m,c,p){
                 case "mineHurt":
 					if(typeof(characters[message.p1])=="undefined")
 						ownSkillManager.removeMine(message.mineId);
-					if(typeof(characters[message.p2])!="undefined")
-						characters[message.p2].hurt(message.dmg);
-					else
+					if(typeof(characters[message.p2])!="undefined"){
+						var currPlayer = characters[message.p2];
+						createExplosionFX(currPlayer.getPosX(), currPlayer.getPosY())
+						currPlayer.hurt(message.dmg);
+					} else {
+						createExplosionFX(ownCharacter.getPosX(), ownCharacter.getPosY())
 						ownCharacter.hurt(message.dmg);
+					}
 					break;
 
 				case "skill":

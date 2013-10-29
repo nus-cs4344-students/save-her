@@ -294,9 +294,6 @@
             <filename>pbullet.png</filename>
             <filename>mine.png</filename>
             <filename>AOE.png</filename>
-            <filename>../../anger3.png</filename>
-            <filename>../../anger1.png</filename>
-            <filename>../../anger2.png</filename>
             <filename>bomb0000.png</filename>
             <filename>bomb0001.png</filename>
             <filename>bomb0002.png</filename>
@@ -306,6 +303,27 @@
             <filename>bomb0006.png</filename>
             <filename>bomb0007.png</filename>
             <filename>STUNwhite.png</filename>
+            <filename>poison2.png</filename>
+            <filename>poison3.png</filename>
+            <filename>poison4.png</filename>
+            <filename>poison5.png</filename>
+            <filename>poison0.png</filename>
+            <filename>poison1.png</filename>
+            <filename>anger1.png</filename>
+            <filename>anger2.png</filename>
+            <filename>anger3.png</filename>
+            <filename>explosion6.png</filename>
+            <filename>explosion1.png</filename>
+            <filename>explosion2.png</filename>
+            <filename>explosion3.png</filename>
+            <filename>explosion4.png</filename>
+            <filename>explosion5.png</filename>
+            <filename>gotStunned_00.png</filename>
+            <filename>gotStunned_01.png</filename>
+            <filename>gotStunned_02.png</filename>
+            <filename>gotStunned_03.png</filename>
+            <filename>gotStunned_04.png</filename>
+            <filename>gotStunned_05.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

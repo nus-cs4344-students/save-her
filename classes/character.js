@@ -696,18 +696,16 @@ function Character(){
     	stopInput = true;
     	console.log("stunned");
 
+    	var stunFX = setInterval(function(){
+    		if(!ISSERVER)
+    			createStunnedFX(posX, posY);
+    	}, 100);
+
         setTimeout(function(){
         	stopInput = false;
+        	clearInterval(stunFX);
         	console.log("unstunned");
         }, time);
-    }
-
-    this.stunOn = function(){
-    	stopInput = true;
-    }
-
-    this.stunOff = function(){
-    	stopInput = false;
     }
 
     this.isStunned = function(){

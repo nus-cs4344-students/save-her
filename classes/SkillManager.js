@@ -7,7 +7,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
     var stage = stageArg;
     var player = playerArg;
     var isServer = isS;
-    var aoe = null;
+    var aoe = [];
     var stun = null;
     var superSaiyan = null;
     var isStun = false;
@@ -167,8 +167,11 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 //local AOE effect
                 if (aoeOn == true && !isServer)
                 {
-                    aoe.position.x = player.getPosX() - aoeRadius;
-                    aoe.position.y = player.getPosY() - aoeRadius;
+                    for(var i=0; i<8; i++){
+                        var aoeSpray = aoe[i];
+                        aoeSpray.position.x = player.getPosX();
+                        aoeSpray.position.y = player.getPosY();
+                    }
                 }
 
                 break;
@@ -280,18 +283,38 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 if (!isServer)
                 {
                     //AOE texture
-                    var texture = PIXI.Texture.fromImage("AOE.png");
-                    aoe = new PIXI.Sprite(texture);
-                    aoe.position.x = x - aoeRadius;
-                    aoe.position.y = y - aoeRadius;
+                    var aoeTextures = [];
+                    for (var i = 0; i < 6; i++)
+                        aoeTextures.push(PIXI.Texture.fromFrame("poison" + (i) + ".png"));
 
-                    stage.addChild(aoe);
+                    for(var i=0; i<8; i++){
+                        var aoeSpray = new PIXI.MovieClip(aoeTextures);
+                        aoe.push(aoeSpray);
+
+                        //var texture = PIXI.Texture.fromImage("AOE.png");
+                        //aoe = new PIXI.Sprite(texture);
+
+                        aoeSpray.scale.x *= 2;
+                        aoeSpray.scale.y *= 2;
+
+                        aoeSpray.anchor.x = 0.1;
+                        aoeSpray.anchor.y = 0.1;
+                        aoeSpray.position.x = x;
+                        aoeSpray.position.y = y;
+                        aoeSpray.rotation = (i*45+10) * Math.PI / 180;   // in radians
+
+                        aoeSpray.animationSpeed = 0.35;
+                        aoeSpray.play();
+
+                        stage.addChild(aoeSpray);
+                    }
                 }
                 aoeOn = true;
 
                 setTimeout(function() {
                     if (!isServer)
-                        stage.removeChild(aoe);
+                        for(var i=0; i<8; i++)
+                            stage.removeChild(aoe[i]);
                     aoeOn = false;
                 }, 10000);
                 break;
