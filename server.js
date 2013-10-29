@@ -17,7 +17,7 @@ var characters = [];
 var bulletManagers = [];
 var skillManagers = [];
 var sockets = [];
-
+var interestList = [];
 // for managing ports
 var usedPorts = [];
 
@@ -53,6 +53,43 @@ var broadcast = function(msg) {
     var messageToSend = JSON.stringify(msg);
     for (var id in sockets)
         sockets[id].write(messageToSend);
+}
+var broadcastWithInterest = function(socket, msg) {
+    msg['playerID'] = socket.id;
+    var messageToSend = JSON.stringify(msg);
+
+    var id;
+    //console.log("bw "+socket);
+    for (id in interestList[socket.id])
+     {
+         console.log(id+" "+interestList[socket.id][id]);
+         if(interestList[socket.id][id]==true)
+            sockets[id].write(messageToSend);
+     }
+}
+var updateInterest = function(){
+    for(var i in players)
+        {
+            for(var j in players)
+                if(i!=j)
+                    {
+                        var x1 = players[i].getPosX();
+                        var y1 = players[i].getPosY();
+                        var x2 = players[j].getPosX();
+                        var y2 = players[j].getPosY();
+                        if(Math.abs(x1-x2)<800&&Math.abs(y1-y2)<600)
+                            {
+                                interestList[i][j]=true;
+                                interestList[j][i]=true;
+                                //console.log("updateInterest "+i);
+                            }
+                            else
+                                {
+                                    interestList[i][j]=false;
+                                    interestList[j][i]=false;
+                                }
+                    }
+        }
 }
 function Server(port) {
 
@@ -91,7 +128,8 @@ function Server(port) {
                             players[socket.id] = characterFac.createCharacter(null, message.characterType, false);
                             bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
                             skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id],false, true);
-
+                            var t = [];
+                            interestList[socket.id] = t;
                         case "jump":
                             players[socket.id].jump();
                             broadcast = true;
@@ -136,11 +174,14 @@ function Server(port) {
                     }
 
                     var id;
-
+                    updateInterest();
                     // broadcast to all other players
                     if (broadcast){
                         setTimeout(function(){
-                            broadcastRestWithPlayerID(socket, message);
+                            if(message.type=="newPlayer")
+                                broadcastRestWithPlayerID(socket,message);
+                            else
+                                broadcastWithInterest(socket, message);
                         }, getDelay());
                     }
 
