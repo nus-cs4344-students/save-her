@@ -3,6 +3,7 @@
 var session;
 var port;
 var player_char;
+var playerName;
 var ownCharacter;		// own player's character
 var characters = [];	// other players' character
 
@@ -17,8 +18,9 @@ var cameraBack;
 
 var mapType;	// 0:graveyard, 1:pixel, 2:happy
 
-function Game(s, m, c, p) {
+function Game(n, s, m, c, p) {
 
+	playerName = n;
     session = s;
     player_char = c;
     mapType = m;

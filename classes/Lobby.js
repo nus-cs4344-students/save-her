@@ -477,7 +477,7 @@ function Lobby(){
 	var connectGame = function(){
 		console.log("map = " + map);
 		console.log("port = " + port);
-		var game = new Game(session,map,character,port);
+		var game = new Game(playerName,session,map,character,port);
 	
 	}
 	
