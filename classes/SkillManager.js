@@ -167,7 +167,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 //local AOE effect
                 if (aoeOn == true && !isServer)
                 {
-                    for(var i=0; i<8; i++){
+                    for (var i = 0; i < 8; i++) {
                         var aoeSpray = aoe[i];
                         aoeSpray.position.x = player.getPosX();
                         aoeSpray.position.y = player.getPosY();
@@ -260,7 +260,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
             case CHARACTERTYPE.PUMPKIN:
                 //landmine, only myself can see
                 mineLeft--;
-                if (isMine) {
+                if (!isServer) {
                     var mineTextures = [];
                     for (var i = 0; i < 8; i++)
                         mineTextures.push(PIXI.Texture.fromFrame("bomb000" + (i) + ".png"));
@@ -287,7 +287,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                     for (var i = 0; i < 6; i++)
                         aoeTextures.push(PIXI.Texture.fromFrame("poison" + (i) + ".png"));
 
-                    for(var i=0; i<8; i++){
+                    for (var i = 0; i < 8; i++) {
                         var aoeSpray = new PIXI.MovieClip(aoeTextures);
                         aoe.push(aoeSpray);
 
@@ -301,7 +301,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                         aoeSpray.anchor.y = 0.1;
                         aoeSpray.position.x = x;
                         aoeSpray.position.y = y;
-                        aoeSpray.rotation = (i*45+10) * Math.PI / 180;   // in radians
+                        aoeSpray.rotation = (i * 45 + 10) * Math.PI / 180;   // in radians
 
                         aoeSpray.animationSpeed = 0.35;
                         aoeSpray.play();
@@ -313,7 +313,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
 
                 setTimeout(function() {
                     if (!isServer)
-                        for(var i=0; i<8; i++)
+                        for (var i = 0; i < 8; i++)
                             stage.removeChild(aoe[i]);
                     aoeOn = false;
                 }, 10000);
@@ -363,6 +363,26 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
         minesX.push(x);
         minesY.push(y);
         mineLeft--;
+    }
+    this.skillMineRemote = function(x, y) {
+        mineLeft--;
+
+        var mineTextures = [];
+        for (var i = 0; i < 8; i++)
+            mineTextures.push(PIXI.Texture.fromFrame("bomb000" + (i) + ".png"));
+        var mine = new PIXI.MovieClip(mineTextures);
+        mine.anchor.x = 0;
+        mine.anchor.y = 0.2;
+        mine.scale.x *= 2;
+        mine.scale.y *= 2;
+        mine.position.x = x;
+        mine.position.y = y;
+        mine.play();
+        mines.push(mine);
+        stage.addChild(mine);
+
+        minesX.push(x);
+        minesY.push(y);
     }
     this.removeMine = function(id) {
         stage.removeChild(mines[id]);
