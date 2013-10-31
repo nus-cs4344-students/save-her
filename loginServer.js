@@ -166,6 +166,9 @@ function loginServer(){
 							try{
 								sessionChild[newSessionID] = require('child_process').fork('server.js');
 								console.log("new child created");
+
+								sessionChild[newSessionID].send(tmp.map);
+
 								//wait to receive port number from the game server
 								sessionChild[newSessionID].on("message", function(m){
 									gameport = m.port;

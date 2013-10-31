@@ -10,7 +10,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
     var aoe = [];
     var stun = null;
     var superSaiyan = null;
-    var isStun = false;
+    var isStun = true;
     //for client
     var mines = [];
     //for server
@@ -39,6 +39,9 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
         setTimeout(function() {
             isStun = false;
         }, time);
+    }
+    this.startOperation = function(time) {
+        isStun = false;
     }
     this.detectCollision = function(players, own, id) {
         //console.log("hit!");
@@ -188,15 +191,22 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 var keys = KeyboardJS.activeKeys();
                 if (player.characterType == CHARACTERTYPE.PUMPKIN)
                 {
+
+                    var isGoingToUseSkill = false;
+
                     for (var i = 0; i < keys.length; i++)
-                    {
-                        if (keys[i] == 'x' && mineLeft >= 1)
-                        {
+                        if (keys[i] == 'x')
+                            isGoingToUseSkill = true;
+
+                    if(player.touchSkill)
+                        isGoingToUseSkill = true;
+
+                    if(isGoingToUseSkill){
+                        if(mineLeft >= 1){
                             var now = (new Date()).getTime();
                             if (now - lastMineTime >= 5000)
                             {
                                 that.skill();
-
                                 lastMineTime = now;
                             }
                         }
@@ -212,13 +222,19 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                     }
                     else
                     {
+
+                        var isGoingToUseSkill = false;
+
                         for (var i = 0; i < keys.length; i++)
-                        {
                             if (keys[i] == 'x')
-                            {
-                                that.skill();
-                                that.cd = 60;
-                            }
+                                isGoingToUseSkill = true;
+
+                        if(player.touchSkill)
+                            isGoingToUseSkill = true;
+
+                        if(isGoingToUseSkill){
+                            that.skill();
+                            that.cd = 60;
                         }
                     }
                 }

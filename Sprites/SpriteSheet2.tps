@@ -324,6 +324,9 @@
             <filename>gotStunned_03.png</filename>
             <filename>gotStunned_04.png</filename>
             <filename>gotStunned_05.png</filename>
+            <filename>HeartBar.png</filename>
+            <filename>start-button.png</filename>
+            <filename>fight.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

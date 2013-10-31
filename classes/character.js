@@ -53,6 +53,11 @@ function Character(){
 	var isDead = false;
 	var stopInput = false;
 
+	// touch controls
+	this.touchJump = false;
+	this.touchShoot = false;
+	this.touchSkill = false;
+
 	// client only - initialise all objects for render
 	this.init = function(stageArg, stopTexturesArg, walkTexturesArg, jumpTexturesArg, dieTexturesArg, hurtTexturesArg, typeArg){
 		if(!ISSERVER){
@@ -75,6 +80,30 @@ function Character(){
 			setAnimation("Walk");
 			spriteMovieClip.play();
 			stage.addChild(spriteMovieClip);
+
+
+	        // initialise touch controls
+	        var playArea = $("canvas")[1];
+
+	        playArea.addEventListener("touchstart", function(e) {
+	            var mouseX = e.changedTouches[0].pageX - playArea.offsetLeft;
+
+	            if(mouseX <= 400)   // left half of canvas
+	                that.touchJump = true;
+	            else {
+	                var mouseY = e.changedTouches[0].pageY - playArea.offsetTop;
+	                if(mouseY < 300)        // top right canvas
+	                    that.touchSkill = true;
+	                else                    // bottom right canvas
+	                    that.touchShoot = true;
+	            }
+	        }, false);
+
+	        playArea.addEventListener("touchend", function(e) {
+	            that.touchJump = false;
+	            that.touchShoot = false;
+	            that.touchSkill = false;
+	        }, false);
 		}
 
 		that.characterType = typeArg;
@@ -122,7 +151,23 @@ function Character(){
 
 		// initialise initial position
 		if(firstUpdate){
-			that.setPosition(225,415);
+			if(isMine){
+				// spawn at a random platform
+				var platformTopPos = [];
+		        for (var i = 0; i < map.length; i++)
+		            for (var j = 0; j < map[i].length; j++)
+		                if(map[i][j] == 1)
+		                	platformTopPos.push([i,j]);
+
+
+
+		        var randPos = platformTopPos[Math.floor((Math.random()*platformTopPos.length))];
+		        that.setPosition(64*randPos[1] + 32, 64*randPos[0] - 64*2);
+			} else {
+				// spawn at some invisible location, and wait for
+				// opponent to appear
+				that.setPosition(-1000,-1000);
+			}
 			firstUpdate = false;
 		}
 	}
@@ -134,7 +179,7 @@ function Character(){
 
 		// horizontal component
 		if(deltaX != 0) {
-			moveBlindlyX(deltaX);
+			moveBlindlyX_DeltaTime(deltaX);
 			for(var i=0; i<relevantRects.length; i++){
 				while(wallDetector.isIntersecting(relevantRects[i])){	// colliding, push
 					if(deltaX > 0)
@@ -157,7 +202,7 @@ function Character(){
 
 		// vertical component
 		if(deltaY != 0) {
-			moveBlindlyY(deltaY);
+			moveBlindlyY_DeltaTime(deltaY);
 
 			if(deltaY < 0){
 				for(var i=0; i<relevantRects.length; i++){
@@ -252,6 +297,13 @@ function Character(){
 	}
 
 	// simply move horizontally, check should be done in move function
+	// factor in time between last update and this update
+	var moveBlindlyX_DeltaTime = function(deltaX){
+		deltaX = deltaX * (deltaTime);
+		moveBlindlyX(deltaX);
+	}
+
+	// simply move horizontally, check should be done in move function
 	var moveBlindlyX = function(deltaX){
 		if(!ISSERVER) spriteMovieClip.position.x += deltaX;
 		if(isMine) stage.position.x -= deltaX;
@@ -267,6 +319,13 @@ function Character(){
 	var teleportToX = function(x){
 		var deltaX = x - posX;
 		moveBlindlyX(deltaX);
+	}
+
+	// simply move vertically, check should be done in move function
+	// factor in time between last update and this update
+	var moveBlindlyY_DeltaTime = function(deltaY){
+		deltaY = deltaY * (deltaTime);
+		moveBlindlyY(deltaY);
 	}
 
 	// simply move vertically, check should be done in move function
@@ -345,11 +404,11 @@ function Character(){
 			// update XSpeed (note that there is no acceleration for remote side)
 			if(holdingKey['right']){
 				remoteSpeedX = CHARACTERMOVEMENTSPEED;
-				speedX = Math.min(speedX + 2, CHARACTERMOVEMENTSPEED);
+				speedX = Math.min(speedX + 2*deltaTime, CHARACTERMOVEMENTSPEED);
 			}
 			else if(holdingKey['left']){
 				remoteSpeedX = -CHARACTERMOVEMENTSPEED;
-				speedX = Math.max(speedX - 2 , -CHARACTERMOVEMENTSPEED);
+				speedX = Math.max(speedX - 2*deltaTime , -CHARACTERMOVEMENTSPEED);
 			}
 			else{
 				remoteSpeedX = 0;
@@ -368,7 +427,7 @@ function Character(){
 		// already jumping
 		if(inAir){
 			if(gravityCounter++ % CHARACTERJUMPGRAVITATIONALPULL == 0)
-				setSpeedY(speedY + 1);
+				setSpeedY(speedY + (deltaTime));
 			return;
 		}
 
@@ -395,7 +454,7 @@ function Character(){
 		if(!ISSERVER && isMine && !stopInput){
 			// check if going to jump
 			var keys = KeyboardJS.activeKeys();
-			if(containsArray(keys, 'space') && !goingToJump)	// player wants to jump!
+			if((containsArray(keys, 'space') || that.touchJump) && !goingToJump)	// player wants to jump!
 				that.jump();
 			
 		}
@@ -552,62 +611,10 @@ function Character(){
 		}
 	}
 
-	/*var interpolateValidity = 0;
-	var interpolate = function(){
+    this.isDeadNow = function(){
+    	return isDead;
+    }
 
-		interpolateValidity--;
-		if(interpolateValidity > 0){
-
-			// for horizontal component
-			var deltaX = interpolatePosX - posX;
-
-			if(deltaX != 0){
-				if(deltaX > CHARACTERMOVEMENTSPEED){						// very far right
-					if(deltaX > CHARACTERMOVEMENTSPEED*interpolateValidity)	// too far away, fly over as smoothly as possible
-						moveBlindlyX(deltaX/interpolateValidity);
-					else													// feign walk right
-						moveBlindlyX(CHARACTERMOVEMENTSPEED);
-				}
-				else if(deltaX < -CHARACTERMOVEMENTSPEED){					 // very far left
-					if(deltaX < -CHARACTERMOVEMENTSPEED*interpolateValidity) // too far away, fly over as smoothly as possible
-						moveBlindlyX(deltaX/interpolateValidity);
-					else													 // feign walk left
-						moveBlindlyX(-CHARACTERMOVEMENTSPEED);
-				}
-			}
-
-			// for vertical component
-			var deltaY = interpolatePosY - posY;
-
-			if(deltaY != 0){
-				if(deltaY > 60 || deltaY < -60)	// interpolate only if too far away (approx 1 tile away)
-					moveBlindlyY(deltaY);
-			}
-
-			if(!ISSERVER){
-				setAnimationBasedOnSpeed(deltaX);
-
-				if(!inAir && deltaX != 0){
-					if(deltaX > 0){
-						spriteMovieClip.scale.x = 2;
-						faceRight = true;
-					} else {
-						spriteMovieClip.scale.x = -2;
-						faceRight = false;
-					}
-				}
-			}
-		}
-	}
-
-	this.interpolateTo = function(x, y){
-		interpolatePosX = x;
-		interpolatePosY = y;
-		interpolateValidity = 10;
-	}*/
-        this.isDeadNow = function(){
-            return isDead;
-        }
 	var die = function(){
 		that.lives--;
 		that.HP = 0;

@@ -25,6 +25,7 @@ function Lobby(){
 	var allSessions = new Array();
 	var sessionCount;
 	
+	var isNewGame = false;
 	
 	//prepare pictures
 	var d_pic = new Image(); //devilz
@@ -54,7 +55,7 @@ function Lobby(){
     var initNetwork = function() {
         // Attempts to connect to game server
         try {
-            socket = new SockJS("http://localhost:4000/SaveHer");
+            socket = new SockJS("http://192.168.1.101:4000/SaveHer");
 			
 			socket.onopen = function() {
 				console.log("socket to server ready");
@@ -477,7 +478,7 @@ function Lobby(){
 	var connectGame = function(){
 		console.log("map = " + map);
 		console.log("port = " + port);
-		var game = new Game(playerName,session,map,character,port);
+		var game = new Game(playerName,session,map,character,port,isNewGame);
 	
 	}
 	
@@ -491,6 +492,7 @@ function Lobby(){
 	var newGame = function(){
 	
 		setTimeout(function(){sendToServer({type:"new_game", playerID:playerID, ownerID:playerID, map:map}); },1000);
+		isNewGame = true;
 		
 	}
 	

@@ -8,7 +8,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
     this.isMine = isMine;
     var stage = stageArg;
     var player = playerArg;
-    var isStun = false;
+    var isStun = true;
     var isServer = isS;
     var speed = 20;
     var dmg = 5;
@@ -26,6 +26,9 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
         setTimeout(function() {
             isStun = false;
         }, time);
+    }
+    this.startOperation = function(time) {
+        isStun = false;
     }
     this.detectCollision = function(players, own, id) {
         //console.log("hit!");
@@ -129,15 +132,22 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
             }
 
         if (that.isMine && !isStun && !player.isDeadNow()) {
+
+            var isGoingToShoot = false;
+
             var keys = KeyboardJS.activeKeys();
             for (var i = 0; i < keys.length; i++)
             {
                 if (keys[i] == 'z')
-                {
-                    that.shoot();
-                    playSound(bulletSound, false);
-                }
+                    isGoingToShoot = true;
+            }
 
+            if(player.touchShoot)
+                isGoingToShoot = true;
+
+            if(isGoingToShoot){
+                that.shoot();
+                playSound(bulletSound, false);
             }
 
             if (player.isFacingRight())

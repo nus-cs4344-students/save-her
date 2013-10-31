@@ -21,6 +21,8 @@ var interestList = [];
 // for managing ports
 var usedPorts = [];
 
+var gameStarted = false;    // if gameStarted, then won't accept any new players
+
 /*
  * private method: unicast(socket, msg)
  *
@@ -49,7 +51,7 @@ var broadcastRestWithPlayerID = function(socket, msg) {
         if (sockets[id] != socket)
             sockets[id].write(messageToSend);
 }
-var broadcast = function(msg) {
+var broadcastAll = function(msg) {
     var messageToSend = JSON.stringify(msg);
     for (var id in sockets)
         sockets[id].write(messageToSend);
@@ -120,16 +122,36 @@ function Server(port) {
 
                     var broadcast = false;
                     var message = JSON.parse(e);
+
+                    if(players[socket.id] == undefined &&
+                        message.type!="newPlayer")
+                        return;
+
                     switch (message.type) {
 
                         case "newPlayer":
-                            console.log("new game player");
-                            characters[socket.id] = message.characterType;
-                            players[socket.id] = characterFac.createCharacter(null, message.characterType, false);
-                            bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
-                            skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id],false, true);
-                            var t = [];
-                            interestList[socket.id] = t;
+                            if(!gameStarted){
+                                console.log("new game player");
+                                characters[socket.id] = message.characterType;
+                                players[socket.id] = characterFac.createCharacter(null, message.characterType, false);
+                                bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
+                                skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id],false, true);
+                                var t = [];
+                                interestList[socket.id] = t;
+                                broadcast = true;
+                            }
+                            break;
+
+                        case "hostStartGame":
+                            gameStarted = true;
+                            for (var id in sockets){
+                                bulletManagers[id].startOperation();
+                                skillManagers[id].startOperation();
+                            }
+                            broadcast = true;
+                            break;
+
+                        // jump
                         case "jump":
                             players[socket.id].jump();
                             broadcast = true;
@@ -180,6 +202,8 @@ function Server(port) {
                         setTimeout(function(){
                             if(message.type=="newPlayer")
                                 broadcastRestWithPlayerID(socket,message);
+                            else if(message.type=="hostStartGame")
+                                broadcastAll(message);
                             else
                                 broadcastWithInterest(socket, message);
                         }, getDelay());
@@ -211,24 +235,11 @@ function Main() {
     {
         // start updating
         setInterval(update, FRAMEDURATION);
-
-        // create map
-        mapRects = createArray(map.length, map[0].length);
-        var rect;
-        for (var i = 0; i < map.length; i++) {
-
-            for (var j = 0; j < map[i].length; j++) {
-                if (map[i][j] == 1 || map[i][j] == 2) {
-                    rect = new Rectangle(stage, j * TILEWIDTH, i * TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
-                    mapRects[i][j] = rect;
-                }
-            }
-
-        }
     }
 
     // game loop
     function update() {
+
         for (var id in sockets)
         {
 			if (players[id]!=undefined){
@@ -236,13 +247,13 @@ function Main() {
 				var msgs = bulletManagers[id].update(players, null, id);
 				for (var i = 0; i < msgs.length; i++)
 				{
-					broadcast(msgs[i]);
+					broadcastAll(msgs[i]);
 				}
 				var msgs = skillManagers[id].update(players, null, id);
 
 				for (var i = 0; i < msgs.length; i++)
 				{
-					broadcast(msgs[i]);
+					broadcastAll(msgs[i]);
 				}
             }
         }
@@ -251,10 +262,40 @@ function Main() {
 
 }
 
+function generateMapCollisionBounds(mapType){
+    switch(mapType){
+        case 0:
+            map = map0;
+            break;
+        case 1:
+            map = map1;
+            break;
+        case 2:
+            map = map2;
+            break;
+    }
+
+    // create map
+    mapRects = createArray(map.length, map[0].length);
+    var rect;
+    for (var i = 0; i < map.length; i++) {
+        for (var j = 0; j < map[i].length; j++) {
+            if (map[i][j] == 1 || map[i][j] == 2) {
+                rect = new Rectangle(null, j * TILEWIDTH, i * TILEHEIGHT, TILEWIDTH, TILEHEIGHT);
+                mapRects[i][j] = rect;
+            }
+        }
+    }
+
+}
+
 //---for managing communication between server.js (child) and loginServer.js (parent)
 process.on('SIGTERM', function () {
 	console.log("exiting");
 	process.exit(0);
+});
+process.on('message', function (m) {
+    generateMapCollisionBounds(parseInt(m));
 });
 
 var isGoodPort = function(port){

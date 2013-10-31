@@ -17,14 +17,16 @@ var camera;
 var cameraBack;
 
 var mapType;	// 0:graveyard, 1:pixel, 2:happy
+var isHost;     // game host - decides when game starts
 
-function Game(n, s, m, c, p) {
+function Game(n, s, m, c, p, i) {
 
 	playerName = n;
     session = s;
     player_char = c;
     mapType = m;
     port = p;
+    isHost = i;
 
     // initialise sounds and music
     //initSounds();
@@ -36,7 +38,7 @@ function Game(n, s, m, c, p) {
     loader.load();
 
     // set the stage and renderer
-    var stage = new PIXI.Stage(0x000000);
+    var stage = new PIXI.Stage(0x000000, true);
     renderer = PIXI.autoDetectRenderer(800, 600);
     document.body.appendChild(renderer.view);
 
@@ -49,8 +51,6 @@ function Game(n, s, m, c, p) {
         var backGUI = new PIXI.DisplayObjectContainer();
         stage.addChild(backGUI);
 
-
-
         // initialise game camera
         cameraBack = new PIXI.DisplayObjectContainer();
         stage.addChild(cameraBack);
@@ -60,7 +60,7 @@ function Game(n, s, m, c, p) {
         // initialise FX
         initFX(camera);
 
-        // initialise mobile controls (retrieved from Pong)
+        // initialise mobile accelerometer controls (retrieved from Pong)
         window.addEventListener("devicemotion", function(e) {
             onDeviceMotion(e);
         }, false);
@@ -80,12 +80,19 @@ function Game(n, s, m, c, p) {
 
         //initialise GUI
         initGameGUI(stage);
+        if(isHost)
+            displayStartButton(stage, sendStartGameMessage);
+        else
+            displayWait(stage);
+
         // render backdrop
         switch (mapType) {
 
             // graveyard level
             case 0:
                 playSound(gameMusic, true);
+
+                map = map0;
 
                 var moonTexture = PIXI.Texture.fromImage("moon.png");
                 var moon = new PIXI.Sprite(moonTexture);
@@ -114,6 +121,8 @@ function Game(n, s, m, c, p) {
             case 1:
                 playSound(gameMusic3, true);
 
+                map = map1;
+
                 var gradientTexture = PIXI.Texture.fromImage("pixelGradient.png");
                 var gradient = new PIXI.Sprite(gradientTexture);
                 gradient.position.x = -50;
@@ -124,7 +133,7 @@ function Game(n, s, m, c, p) {
 
                 var pixelbackTexture = PIXI.Texture.fromImage("pixelbackdrop.png");
                 var pixelback = new PIXI.Sprite(pixelbackTexture);
-                pixelback.position.x = -50;
+                pixelback.position.x = 0;
                 pixelback.position.y = 0;
                 pixelback.width = pixelback.width * 2;
                 pixelback.height = pixelback.height * 2;
@@ -139,6 +148,8 @@ function Game(n, s, m, c, p) {
                 // happy level
             case 2:
                 playSound(gameMusic2, true);
+
+                map = map2;
 
                 var hellobackTexture = PIXI.Texture.fromImage("helloBackdrop.png");
                 var helloback = new PIXI.Sprite(hellobackTexture);
@@ -283,7 +294,7 @@ function Game(n, s, m, c, p) {
         camera.position.y = ownCharacter.getSprite().position.y + 100;
 
         // networking		
-        var url = "http://localhost:" + port + "/game"
+        var url = "http://192.168.1.101:" + port + "/game"
         socket = new SockJS(url);	// set as global variable in constants.js
 
         socket.onopen = function() {
@@ -309,6 +320,18 @@ function Game(n, s, m, c, p) {
                     bulletManagers[message.playerID] = new BulletManager(camera, characters[message.playerID], false, false);
                     skillManagers[message.playerID] = new SkillManager(camera, characters[message.playerID], bulletManagers[message.playerID], false, false);
                     addPlayerGUI(stage);
+                    break;
+
+                // the host of the game starts it
+                case "hostStartGame":
+                    for (var id in characters){
+                        bulletManagers[id].startOperation();
+                        skillManagers[id].startOperation();
+                        console.log(id);
+                    }
+                    ownBulletManager.startOperation();
+                    ownSkillManager.startOperation();
+                    concludeStartMessages(stage);
                     break;
 
                     // do a jump
@@ -397,6 +420,10 @@ function Game(n, s, m, c, p) {
         }
     }
 
+    function sendStartGameMessage(){
+        sendToServer({type: "hostStartGame"});
+    }
+
     // render loop
     function animate() {
         requestAnimFrame(animate);
@@ -404,8 +431,18 @@ function Game(n, s, m, c, p) {
     }
 
     // game loop
-
+    var firstUpdate = true;
+    var lastUpdate = Date.now();
     function update() {
+
+        if(firstUpdate){
+            firstUpdate = false;
+            lastUpdate = Date.now();
+        }
+
+        var now = Date.now();
+        deltaTime = (now - lastUpdate)/(FRAMEDURATION);
+        lastUpdate = now;
 
         // update characters
         if (ownCharacter != null) {
