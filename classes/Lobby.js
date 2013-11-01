@@ -170,13 +170,13 @@ function Lobby(){
 			root.add(login);
 			var prompt = new zebra.ui.Label("Name your character: ");
 			login.add(zebra.layout.CENTER,prompt);		
-			var userInputTF = new zebra.ui.TextField();
-			userInputTF.setPSByRowsCols(2,15); 
+			var userInputTF = new zebra.ui.HtmlTextField();
 			login.add(zebra.layout.CENTER,userInputTF);
-			var nextButton =  new zebra.ui.Button("Next",zebra.ui.MouseListener,[function mouseClicked(e){
-				login.setVisible(false);			
-				playerName = userInputTF.getValue();
+			var nextButton =  new zebra.ui.Button("Next",zebra.ui.MouseListener,[function mouseClicked(e){			
+				playerName = userInputTF.getText();
 				newPlayer(playerName);
+				login.remove(userInputTF);
+				login.setVisible(false);
 				showSelectChar();
 			}]);
 			nextButton.setFireParams(true,-1);
