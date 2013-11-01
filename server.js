@@ -13,7 +13,7 @@ require(lib_path + "utility.js");
 
 // server position of all players
 var players = [];
-var characters = [];
+var playerProfile = [];
 var bulletManagers = [];
 var skillManagers = [];
 var sockets = [];
@@ -110,7 +110,7 @@ function Server(port) {
         try {
             // send current players to the new player
            for (var id in sockets)
-				unicast(socket, {type: "newPlayer", playerID: id, characterType: characters[id]})
+				unicast(socket, {type: "newPlayer", playerID: id, playerName: playerProfile[id].name, characterType: playerProfile[id].character})
 
             sockets[socket.id] = socket;
 
@@ -132,8 +132,8 @@ function Server(port) {
                         case "newPlayer":
                             if(!gameStarted){
                                 console.log("new game player");
-                                characters[socket.id] = message.characterType;
-                                players[socket.id] = characterFac.createCharacter(null, message.characterType, false);
+                                playerProfile[socket.id] = message.player;
+                                players[socket.id] = characterFac.createCharacter(null, message.player.character, false);
                                 bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
                                 skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id],false, true);
                                 var t = [];

@@ -55,7 +55,7 @@ function Lobby(){
     var initNetwork = function() {
         // Attempts to connect to game server
         try {
-            socket = new SockJS("http://192.168.1.101:4000/SaveHer");
+            socket = new SockJS("http://localhost:4000/SaveHer");
 			
 			socket.onopen = function() {
 				console.log("socket to server ready");
@@ -73,9 +73,9 @@ function Lobby(){
 						break;
 					case "relog_player":	
 						player = message.player;
-						playerName = message.playerName;
-						character = message.character;
-						avatar = message.avatar;
+						playerName = player.name;
+						character = player.character;
+						avatar = player.avatar;
 						console.log("received relog_player "+player+" "+playerName+" "+character+" "+avatar);
 						showMainLobby();
 						break;
@@ -83,6 +83,7 @@ function Lobby(){
 						//console.log("joining game...");
 						map = message.map;
 						port = message.port;
+						player = message.player; //receive updated copy of the player object
 						console.log("received join_game map = " + map + " and port = " + port);
 						$(stage.canvas).fadeOut();
 						connectGame();
@@ -90,6 +91,7 @@ function Lobby(){
 					case "new_game":
 						session = message.sessionID;
 						port = message.port;
+						player = message.player; //receive updated copy of the player object
 						//console.log("received new_game from server, sessionID = #" + session);
 						console.log("received new_game map = " + map + " and port = " + port);
 						$(stage.canvas).fadeOut();
@@ -393,7 +395,7 @@ function Lobby(){
 					
 				}
 			} 
-		},1000);		
+		},500);		
 			
 
 	}
@@ -478,7 +480,7 @@ function Lobby(){
 	var connectGame = function(){
 		console.log("map = " + map);
 		console.log("port = " + port);
-		var game = new Game(playerName,session,map,character,port,isNewGame);
+		var game = new Game(player,session,map,port,isNewGame);
 	
 	}
 	

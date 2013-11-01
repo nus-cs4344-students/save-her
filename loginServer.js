@@ -119,10 +119,7 @@ function loginServer(){
 								setPlayer(message.playerID,socket);
 								var pInfo = {
 									type:"relog_player",
-									player:pm.getPlayer(message.playerID),
-									playerName:pm.getPlayerName(message.playerID),
-									character:pm.getChar(message.playerID),
-									avatar:pm.getCharAvatar(message.playerID)};
+									player:pm.getPlayer(message.playerID)};
 								unicast(playerSockets[message.playerID],pInfo);
 							} else{														
 								unicast(socket,{type:"PlayerNotFound"});
@@ -138,7 +135,7 @@ function loginServer(){
 							pm.setSession(message.playerID,s);	
 							sm.addPlayerToSession(message.sessionID,message.playerID);
 							console.log("checking player's("+message.playerID+") session: " + pm.getLastSession(message.playerID).sessionID);
-							unicast(playerSockets[message.playerID],{type:"join_game",map:s.map,port:s.port});
+							unicast(playerSockets[message.playerID],{type:"join_game",map:s.map,port:s.port,player:pm.getPlayer(message.playerID)});
 							break;
 						case "new_game":
 							var gameport;
@@ -177,7 +174,7 @@ function loginServer(){
 									pm.setSession(message.playerID,sm.getSession(newSessionID));
 									console.log("checking player's session: " + pm.getLastSession(message.playerID).sessionID);
 									console.log("sending port = " + gameport);
-									unicast(playerSockets[message.playerID],{type:"new_game",sessionID:newSessionID,port:gameport});
+									unicast(playerSockets[message.playerID],{type:"new_game",sessionID:newSessionID,port:gameport,player:pm.getPlayer(message.playerID)});
 								});
 							} catch (f) {
 								console.log("Child-creating Error: " + f);

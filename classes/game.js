@@ -3,7 +3,7 @@
 var session;
 var port;
 var player_char;
-var playerName;
+var player;
 var ownCharacter;		// own player's character
 var characters = [];	// other players' character
 
@@ -19,11 +19,11 @@ var cameraBack;
 var mapType;	// 0:graveyard, 1:pixel, 2:happy
 var isHost;     // game host - decides when game starts
 
-function Game(n, s, m, c, p, i) {
+function Game(pl, s, m, p, i) {
 
-	playerName = n;
+	player = pl;
     session = s;
-    player_char = c;
+    player_char = player.character;
     mapType = m;
     port = p;
     isHost = i;
@@ -294,13 +294,13 @@ function Game(n, s, m, c, p, i) {
         camera.position.y = ownCharacter.getSprite().position.y + 100;
 
         // networking		
-        var url = "http://192.168.1.101:" + port + "/game"
+        var url = "http://localhost:" + port + "/game"
         socket = new SockJS(url);	// set as global variable in constants.js
 
         socket.onopen = function() {
             console.log("socket to game server ready");
             socketReady = true;
-            sendToServer({type: "newPlayer", characterType: player_char});
+            sendToServer({type: "newPlayer", player: player});
         }
 
         // on receiving a message from server
@@ -315,6 +315,11 @@ function Game(n, s, m, c, p, i) {
                 // to clients to create the player in the game
                 // characterType indicates type of character
                 // playerID corresponds to the socket id of the player
+				// @EVERYONE - pls note that playerID here is not the same
+				// as the playerID that is mapped to the player upon login
+				// so you cannot do something like playerManager.getPlayerName(playerID)
+				// @ZIXIAN - you will receive messsage.playerName (opponent's name) in here
+				// see what you wanna do with it..
                 case "newPlayer":
                     characters[message.playerID] = characterFac.createCharacter(camera, message.characterType, false);
                     bulletManagers[message.playerID] = new BulletManager(camera, characters[message.playerID], false, false);
