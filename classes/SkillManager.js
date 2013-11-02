@@ -51,9 +51,10 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
         switch (player.characterType) {
             case CHARACTERTYPE.PUMPKIN:
                 //landmine
-
+                //console.log("detect");
                 if (mineLeft < 4)
                 {
+                    //console.log("detect1");
                     var msgs = [];
 
                     for (var i = 0; i < minesX.length; i++)
@@ -62,7 +63,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                         {
                             if (j != id)
                             {
-
+                                //console.log(players[j].getPosY()+" "+minesY[i]);
                                 if (players[j].isColliding(new Rectangle(stage, minesX[i], minesY[i], mineSize, mineSize)))
                                 {
                                     players[j].hurt(mineDamage);
@@ -93,16 +94,18 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                         {
                             if (players[j].isCollidingCircle(player.getPosX(), player.getPosY(), aoeRadius))
                             {
-                                players[j].hurt(aoeDamage);
+                                
                                 hit = true;
                                 var now = (new Date()).getTime();
 
                                 if (typeof(lastAoeHurtTime[j]) == "undefined")
                                     lastAoeHurtTime[j] = 0;
-                                console.log(lastAoeHurtTime[j]);
+                                //console.log(lastAoeHurtTime[j]);
                                 if (now - lastAoeHurtTime[j] >= 1000)
                                 {
+                                    players[j].hurt(aoeDamage);
                                     var msg = {type: "hurt", p1: id, p2: j, dmg: aoeDamage, hpLeft:players[j].HP};
+                                    console.log(msg);
                                     msgs.push(msg);
                                     lastAoeHurtTime[j] = now;
                                 }

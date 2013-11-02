@@ -124,7 +124,7 @@ function Server(port) {
                     case "devilz":
                         characterType = CHARACTERTYPE.DEVIL;
                         break;
-                    case "pumpkin":
+                    case "pompkin":
                         characterType = CHARACTERTYPE.PUMPKIN;
                         break;
                 }
@@ -165,7 +165,7 @@ function Server(port) {
                                     case "devilz":
                                         characterType = CHARACTERTYPE.DEVIL;
                                         break;
-                                    case "pumpkin":
+                                    case "pompkin":
                                         characterType = CHARACTERTYPE.PUMPKIN;
                                         break;
                                 }
@@ -223,6 +223,7 @@ function Server(port) {
 
                         case "skill":
                             //use the accurate position
+                            console.log(message);
                             if (players[socket.id].characterType == CHARACTERTYPE.PUMPKIN)
                                 skillManagers[socket.id].serverMine(message.x, message.y);
                             else
