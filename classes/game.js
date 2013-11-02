@@ -495,18 +495,22 @@ function Game(pl, s, m, p, i) {
         }
     }
 
-    var prevVx = 0;
-    var onDeviceMotion = function(e) {
-        var vx = e.accelerationIncludingGravity.x;
-        if (vx - prevVx > 0.1) {
-            tiltLeft = true;
-        }
 
-        if (prevVx - vx > 0.1) {
+    var onDeviceMotion = function(e) {
+        var vx = e.accelerationIncludingGravity.x*5;
+        if (vx > 14) {
             tiltRight = true;
         }
 
-        prevVx = vx;
+        else if (vx < -14) {
+            tiltLeft = true;
+        }
+		else
+		{
+        tiltLeft = false;
+        tiltRight = false;
+        }
+
     }
 
 }

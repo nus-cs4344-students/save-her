@@ -369,11 +369,16 @@ function Character(){
 				}
 			}
 
-			// accelerometer controls
-			if(tiltRight) rightDown = true;
-			if(tiltLeft) leftDown = true;
-			tiltLeft = false;
-			tiltRight = false;
+            // accelerometer controls
+            if(tiltRight)
+            {   rightDown = true;
+                holdingKey['right'] = true;
+            }
+            if(tiltLeft)
+            {
+                leftDown = true;
+                holdingKey['left'] = true;
+            }
 			
 			var inputChanged = false;
 			remoteSpeedX = 0;
