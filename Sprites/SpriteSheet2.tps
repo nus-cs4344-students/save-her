@@ -327,6 +327,7 @@
             <filename>HeartBar.png</filename>
             <filename>start-button.png</filename>
             <filename>fight.png</filename>
+            <filename>scoreboard.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

@@ -245,7 +245,7 @@ function addPlayerGUI(stage){
 function gameover()
 {
 
-    var gameover = new PIXI.Sprite(PIXI.Texture.fromImage("Sprites/scoreboard.png"));
+    var gameover = new PIXI.Sprite(PIXI.Texture.fromImage("scoreboard.png"));
     gameover.anchor.x = 0.5;
     gameover.anchor.y = 0.5;
     gameover.position.x = 400;
