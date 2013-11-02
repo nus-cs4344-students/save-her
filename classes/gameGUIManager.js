@@ -314,6 +314,7 @@ function gameGUIUpdate(){
         HPIcons[i].width = health2;
         //display live text
         LivesTexts[i].setText(characters[playerID].lives.toString());
+        Users[i].setText(opponment[i-1].toString());
 
     }
 

@@ -2,6 +2,7 @@
 
 var session;
 var port;
+var opponment = [];
 var player_char;
 var player;
 var ownCharacter;		// own player's character
@@ -316,6 +317,7 @@ function Game(pl, s, m, p, i) {
 				// @ZIXIAN - you will receive messsage.player.name (opponent's name) in here
 				// see what you wanna do with it..
                 case "newPlayer":
+				    opponment.push(message.player.name);
                     characters[message.playerID] = characterFac.createCharacter(camera, message.player.character, false);
                     bulletManagers[message.playerID] = new BulletManager(camera, characters[message.playerID], false, false);
                     skillManagers[message.playerID] = new SkillManager(camera, characters[message.playerID], bulletManagers[message.playerID], false, false);
