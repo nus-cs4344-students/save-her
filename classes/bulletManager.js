@@ -49,7 +49,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                             bullets[i].destroy();
                             players[j].hurt(bullets[i].getDamage());
                             hit = true;
-                            var msg = {type: "hurt", p1: id, p2: j, dmg: bullets[i].getDamage()};
+                            var msg = {type: "hurt", p1: id, p2: j, dmg: bullets[i].getDamage(), hpLeft:players[j].HP};
                             msgs.push(msg);
                             //alert(players[j].HP);
                             //alert(bullets[i].getTtl());

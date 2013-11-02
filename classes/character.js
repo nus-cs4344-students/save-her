@@ -69,6 +69,7 @@ function Character(){
 			hurtTextures = hurtTexturesArg;
 
 			spriteMovieClip = new PIXI.MovieClip(stopTextures);
+                        console.log(spriteMovieClip);
 			spriteMovieClip.scale.x = spriteMovieClip.scale.y = 2;
 			spriteMovieClip.position.x = posX;
 			if(typeArg == CHARACTERTYPE.DEVIL)

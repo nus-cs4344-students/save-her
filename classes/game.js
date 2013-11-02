@@ -300,7 +300,7 @@ function Game(pl, s, m, p, i) {
         socket.onopen = function() {
             console.log("socket to game server ready");
             socketReady = true;
-            sendToServer({type: "newPlayer", player: player});
+            sendToServer({type: "newPlayer", player: player, characterType:player_char});
         }
 
         // on receiving a message from server
@@ -321,6 +321,7 @@ function Game(pl, s, m, p, i) {
 				// @ZIXIAN - you will receive messsage.playerName (opponent's name) in here
 				// see what you wanna do with it..
                 case "newPlayer":
+                    console.log(message);
                     characters[message.playerID] = characterFac.createCharacter(camera, message.characterType, false);
                     bulletManagers[message.playerID] = new BulletManager(camera, characters[message.playerID], false, false);
                     skillManagers[message.playerID] = new SkillManager(camera, characters[message.playerID], bulletManagers[message.playerID], false, false);
@@ -371,9 +372,15 @@ function Game(pl, s, m, p, i) {
 
                 case "hurt":
                     if (typeof(characters[message.p2]) != "undefined")
-                        characters[message.p2].hurt(message.dmg);
+                     {
+                         characters[message.p2].hurt(message.dmg);
+                         characters[message.p2].HP =  message.hpLeft;
+                     }
                     else
+                    {
                         ownCharacter.hurt(message.dmg);
+                        ownCharacter.HP = message.hpLeft;
+                    }
                     break;
 
                 case "mineHurt":
@@ -389,13 +396,16 @@ function Game(pl, s, m, p, i) {
                         var currPlayer = characters[message.p2];
                         createExplosionFX(currPlayer.getPosX(), currPlayer.getPosY())
                         currPlayer.hurt(message.dmg);
+                        currPlayer.HP =  message.hpLeft;
                     } else {
                         createExplosionFX(ownCharacter.getPosX(), ownCharacter.getPosY())
                         ownCharacter.hurt(message.dmg);
+                        ownCharacter.HP = message.hpLeft;
                     }
                     break;
 
                 case "skill":
+                    console.log(message);
                     if (characters[message.playerID].characterType == CHARACTERTYPE.PUMPKIN)
                     {
                         skillManagers[message.playerID].skillMineRemote(message.x, message.y);
@@ -466,6 +476,7 @@ function Game(pl, s, m, p, i) {
         for (playerID in characters)
         {
             characters[playerID].update();
+            console.log(playerID);
             bulletManagers[playerID].update(characters, ownCharacter, playerID);
             skillManagers[playerID].update(characters, ownCharacter, playerID);
             //alert(playerID);

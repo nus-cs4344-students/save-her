@@ -63,35 +63,35 @@ var broadcastWithInterest = function(socket, msg) {
     var id;
     //console.log("bw "+socket);
     for (id in interestList[socket.id])
-     {
-         console.log(id+" "+interestList[socket.id][id]);
-         if(interestList[socket.id][id]==true)
+    {
+        console.log(id + " " + interestList[socket.id][id]);
+        if (interestList[socket.id][id] == true)
             sockets[id].write(messageToSend);
-     }
+    }
 }
-var updateInterest = function(){
-    for(var i in players)
-        {
-            for(var j in players)
-                if(i!=j)
-                    {
-                        var x1 = players[i].getPosX();
-                        var y1 = players[i].getPosY();
-                        var x2 = players[j].getPosX();
-                        var y2 = players[j].getPosY();
-                        if(Math.abs(x1-x2)<800&&Math.abs(y1-y2)<600)
-                            {
-                                interestList[i][j]=true;
-                                interestList[j][i]=true;
-                                //console.log("updateInterest "+i);
-                            }
-                            else
-                                {
-                                    interestList[i][j]=false;
-                                    interestList[j][i]=false;
-                                }
-                    }
-        }
+var updateInterest = function() {
+    for (var i in players)
+    {
+        for (var j in players)
+            if (i != j)
+            {
+                var x1 = players[i].getPosX();
+                var y1 = players[i].getPosY();
+                var x2 = players[j].getPosX();
+                var y2 = players[j].getPosY();
+                if (Math.abs(x1 - x2) < 1600 && Math.abs(y1 - y2) < 1200)
+                {
+                    interestList[i][j] = true;
+                    interestList[j][i] = true;
+                    //console.log("updateInterest "+i);
+                }
+                else
+                {
+                    interestList[i][j] = false;
+                    interestList[j][i] = false;
+                }
+            }
+    }
 }
 function Server(port) {
 
@@ -99,7 +99,7 @@ function Server(port) {
     var http = require('http');
     var sockjs = require('sockjs');
 
-	http.globalAgent.maxSockets = 8; //maximum 8 players in a game
+    http.globalAgent.maxSockets = 8; //maximum 8 players in a game
     var characterFac = new CharacterFactory();
     var serverSocket = sockjs.createServer();
 
@@ -109,33 +109,69 @@ function Server(port) {
     serverSocket.on("connection", function(socket) {
         try {
             // send current players to the new player
-           for (var id in sockets)
-				unicast(socket, {type: "newPlayer", playerID: id, playerName: playerProfile[id].name, characterType: playerProfile[id].character})
+
+            for (var id in sockets)
+            {
+                var characterType;
+                switch (playerProfile[id].character)
+                {
+                    case "human":
+                        characterType = CHARACTERTYPE.HUMAN;
+                        break;
+                    case "shroom":
+                        characterType = CHARACTERTYPE.MUSHROOM;
+                        break;
+                    case "devilz":
+                        characterType = CHARACTERTYPE.DEVIL;
+                        break;
+                    case "pumpkin":
+                        characterType = CHARACTERTYPE.PUMPKIN;
+                        break;
+                }
+                unicast(socket, {type: "newPlayer", playerID: id, playerName: playerProfile[id].name, characterType: characterType})
+                console.log(characterType+"!");
+            }
 
             sockets[socket.id] = socket;
 
             // on receiving something from client
             socket.on("data", function(e) {
 
-                setTimeout(function(){
+                setTimeout(function() {
                     console.log(e);
 
                     var broadcast = false;
                     var message = JSON.parse(e);
 
-                    if(players[socket.id] == undefined &&
-                        message.type!="newPlayer")
+                    if (players[socket.id] == undefined &&
+                            message.type != "newPlayer")
                         return;
 
                     switch (message.type) {
 
                         case "newPlayer":
-                            if(!gameStarted){
+                            if (!gameStarted) {
                                 console.log("new game player");
                                 playerProfile[socket.id] = message.player;
-                                players[socket.id] = characterFac.createCharacter(null, message.player.character, false);
+                                var characterType;
+                                switch (message.player.character)
+                                {
+                                    case "human":
+                                        characterType = CHARACTERTYPE.HUMAN;
+                                        break;
+                                    case "shroom":
+                                        characterType = CHARACTERTYPE.MUSHROOM;
+                                        break;
+                                    case "devilz":
+                                        characterType = CHARACTERTYPE.DEVIL;
+                                        break;
+                                    case "pumpkin":
+                                        characterType = CHARACTERTYPE.PUMPKIN;
+                                        break;
+                                }
+                                players[socket.id] = characterFac.createCharacter(null, characterType, false);
                                 bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
-                                skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id],false, true);
+                                skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id], false, true);
                                 var t = [];
                                 interestList[socket.id] = t;
                                 broadcast = true;
@@ -144,27 +180,27 @@ function Server(port) {
 
                         case "hostStartGame":
                             gameStarted = true;
-                            for (var id in sockets){
+                            for (var id in sockets) {
                                 bulletManagers[id].startOperation();
                                 skillManagers[id].startOperation();
                             }
                             broadcast = true;
                             break;
 
-                        // jump
+                            // jump
                         case "jump":
                             players[socket.id].jump();
                             broadcast = true;
                             break;
 
-                        // landed from a fall
+                            // landed from a fall
                         case "land":
                             players[socket.id].startInterpolateX(message.PosX);
                             players[socket.id].startInterpolateY(message.PosY);
                             broadcast = true;
                             break;
 
-                        // fall when hovering over nothing
+                            // fall when hovering over nothing
                         case "fall":
                             players[socket.id].setPosition(message.PosX, message.PosY);
                             players[socket.id].fall();
@@ -172,7 +208,7 @@ function Server(port) {
                             break;
 
                         case "speedX":
-                            if(!players[socket.id].isObsolete(message.Seq)){
+                            if (!players[socket.id].isObsolete(message.Seq)) {
                                 players[socket.id].setSpeedX(message.SpeedX);
                                 players[socket.id].startInterpolateX(message.PosX);
                                 broadcast = true;
@@ -198,11 +234,11 @@ function Server(port) {
                     var id;
                     updateInterest();
                     // broadcast to all other players
-                    if (broadcast){
-                        setTimeout(function(){
-                            if(message.type=="newPlayer")
-                                broadcastRestWithPlayerID(socket,message);
-                            else if(message.type=="hostStartGame")
+                    if (broadcast) {
+                        setTimeout(function() {
+                            if (message.type == "newPlayer")
+                                broadcastRestWithPlayerID(socket, message);
+                            else if (message.type == "hostStartGame")
                                 broadcastAll(message);
                             else
                                 broadcastWithInterest(socket, message);
@@ -242,19 +278,19 @@ function Main() {
 
         for (var id in sockets)
         {
-			if (players[id]!=undefined){
-				players[id].update();
-				var msgs = bulletManagers[id].update(players, null, id);
-				for (var i = 0; i < msgs.length; i++)
-				{
-					broadcastAll(msgs[i]);
-				}
-				var msgs = skillManagers[id].update(players, null, id);
+            if (players[id] != undefined) {
+                players[id].update();
+                var msgs = bulletManagers[id].update(players, null, id);
+                for (var i = 0; i < msgs.length; i++)
+                {
+                    broadcastAll(msgs[i]);
+                }
+                var msgs = skillManagers[id].update(players, null, id);
 
-				for (var i = 0; i < msgs.length; i++)
-				{
-					broadcastAll(msgs[i]);
-				}
+                for (var i = 0; i < msgs.length; i++)
+                {
+                    broadcastAll(msgs[i]);
+                }
             }
         }
 
@@ -262,8 +298,8 @@ function Main() {
 
 }
 
-function generateMapCollisionBounds(mapType){
-    switch(mapType){
+function generateMapCollisionBounds(mapType) {
+    switch (mapType) {
         case 0:
             map = map0;
             break;
@@ -290,31 +326,31 @@ function generateMapCollisionBounds(mapType){
 }
 
 //---for managing communication between server.js (child) and loginServer.js (parent)
-process.on('SIGTERM', function () {
-	console.log("exiting");
-	process.exit(0);
+process.on('SIGTERM', function() {
+    console.log("exiting");
+    process.exit(0);
 });
-process.on('message', function (m) {
+process.on('message', function(m) {
     generateMapCollisionBounds(parseInt(m));
 });
 
-var isGoodPort = function(port){
-	for (var i = 0; i<usedPorts.length; i++){
-		if (usedPorts[i] == port){
-			return false;
-		}
-	}
-	usedPorts.push(port);
-	return true;
+var isGoodPort = function(port) {
+    for (var i = 0; i < usedPorts.length; i++) {
+        if (usedPorts[i] == port) {
+            return false;
+        }
+    }
+    usedPorts.push(port);
+    return true;
 }
 
 var application = new Main();
 console.log("old GAMEPORT = " + GAMEPORT);
-var p = GAMEPORT+Math.floor((Math.random()*100)+1);
-while (!isGoodPort(p)){
-	p = GAMEPORT+Math.floor((Math.random()*100)+1);
+var p = GAMEPORT + Math.floor((Math.random() * 100) + 1);
+while (!isGoodPort(p)) {
+    p = GAMEPORT + Math.floor((Math.random() * 100) + 1);
 }
-process.send({port:p});
+process.send({port: p});
 var server = new Server(p);
 console.log("connecting to port = " + p);
 application.start();

@@ -47,7 +47,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
         //console.log("hit!");
         var hit = false;
         var msgs = [];
-
+        //console.log(player.characterType);
         switch (player.characterType) {
             case CHARACTERTYPE.PUMPKIN:
                 //landmine
@@ -66,7 +66,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                                 if (players[j].isColliding(new Rectangle(stage, minesX[i], minesY[i], mineSize, mineSize)))
                                 {
                                     players[j].hurt(mineDamage);
-                                    var msg = {type: "mineHurt", p1: id, p2: j, dmg: mineDamage, mineId: i};
+                                    var msg = {type: "mineHurt", p1: id, p2: j, dmg: mineDamage, mineId: i, hpLeft:players[j].HP};
                                     msgs.push(msg);
                                     mines.splice(i, 1);
                                     minesX.splice(i, 1);
@@ -82,9 +82,10 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
 
             case CHARACTERTYPE.MUSHROOM:
                 //AOE
+                //console.log("detect1");
                 if (aoeOn == true)
                 {
-
+                    //console.log("detect");
                     var msgs = [];
                     for (var j in players)
                     {
@@ -101,7 +102,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                                 console.log(lastAoeHurtTime[j]);
                                 if (now - lastAoeHurtTime[j] >= 1000)
                                 {
-                                    var msg = {type: "hurt", p1: id, p2: j, dmg: aoeDamage};
+                                    var msg = {type: "hurt", p1: id, p2: j, dmg: aoeDamage, hpLeft:players[j].HP};
                                     msgs.push(msg);
                                     lastAoeHurtTime[j] = now;
                                 }
@@ -330,7 +331,10 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 setTimeout(function() {
                     if (!isServer)
                         for (var i = 0; i < 8; i++)
-                            stage.removeChild(aoe[i]);
+                         {
+                             stage.removeChild(aoe[i]);
+                         }
+                    aoe = [];
                     aoeOn = false;
                 }, 10000);
                 break;
