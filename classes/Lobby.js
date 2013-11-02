@@ -75,7 +75,6 @@ function Lobby(){
 						player = message.player;
 						playerName = player.name;
 						character = player.character;
-						avatar = player.avatar;
 						console.log("received relog_player "+player+" "+playerName+" "+character+" "+avatar);
 						showMainLobby();
 						break;
@@ -208,7 +207,7 @@ function Lobby(){
 		
 		var devilz = new zebra.ui.ImagePan(d_pic,zebra.ui.MouseListener,[function mouseClicked(e){
 			charSelect.setVisible(false);
-			character = "devilz";
+			character = CHARACTERTYPE.DEVIL;
 			avatar = d_pic;
 			sendToServer({type:"set_char", playerID:playerID,character:character}); 
 			//console.log("selected devilz");
@@ -216,14 +215,14 @@ function Lobby(){
 		}]);
 		var devilz_txt = new zebra.ui.Label("Devilz",zebra.ui.MouseListener,[function mouseClicked(e){
 			charSelect.setVisible(false);
-			character = "devilz";
+			character = CHARACTERTYPE.DEVIL;
 			avatar = d_pic;
 			sendToServer({type:"set_char", playerID:playerID,character:character}); 
 			//console.log("selected devilz");
 			showMainLobby();
 		}]);var shroom = new zebra.ui.ImagePan(s_pic,zebra.ui.MouseListener,[function mouseClicked(e){
 			charSelect.setVisible(false);
-			character = "shroom";			
+			character = CHARACTERTYPE.MUSHROOM;			
 			avatar = s_pic;
 			sendToServer({type:"set_char", playerID:playerID,character:character}); 
 			//console.log("selected shroom");
@@ -231,7 +230,7 @@ function Lobby(){
 		}]);
 		var shroom_txt = new zebra.ui.Label("Shroom",zebra.ui.MouseListener,[function mouseClicked(e){
 			charSelect.setVisible(false);
-			character = "shroom";			
+			character = CHARACTERTYPE.MUSHROOM;			
 			avatar = s_pic;
 			sendToServer({type:"set_char", playerID:playerID,character:character}); 
 			//console.log("selected shroom");
@@ -239,7 +238,7 @@ function Lobby(){
 		}]);
 		var pompkin = new zebra.ui.ImagePan(p_pic,zebra.ui.MouseListener,[function mouseClicked(e){
 			charSelect.setVisible(false);
-			character = "pompkin";			
+			character = CHARACTERTYPE.PUMPKIN;			
 			avatar = p_pic;
 			sendToServer({type:"set_char", playerID:playerID,character:character}); 
 			//console.log("selected pompkin");
@@ -247,7 +246,7 @@ function Lobby(){
 		}]);
 		var pompkin_txt = new zebra.ui.Label("Pompkin",zebra.ui.MouseListener,[function mouseClicked(e){
 			charSelect.setVisible(false);
-			character = "pompkin";			
+			character = CHARACTERTYPE.PUMPKIN;			
 			avatar = p_pic;
 			sendToServer({type:"set_char", playerID:playerID,character:character}); 
 			//console.log("selected pompkin");
@@ -255,7 +254,7 @@ function Lobby(){
 		}]);
 		var human = new zebra.ui.ImagePan(h_pic,zebra.ui.MouseListener,[function mouseClicked(e){
 			charSelect.setVisible(false);
-			character = "human";		
+			character = CHARACTERTYPE.HUMAN;		
 			avatar = h_pic;		
 			sendToServer({type:"set_char", playerID:playerID,character:character}); 
 			//console.log("selected human");
@@ -263,7 +262,7 @@ function Lobby(){
 		}]);
 		var human_txt = new zebra.ui.Label("Human",zebra.ui.MouseListener,[function mouseClicked(e){
 			charSelect.setVisible(false);
-			character = "human";		
+			character = CHARACTERTYPE.HUMAN;		
 			avatar = h_pic;		
 			sendToServer({type:"set_char", playerID:playerID,character:character}); 
 			//console.log("selected human");
@@ -299,7 +298,21 @@ function Lobby(){
 		root.add(mainLobby);
 		
 		if (character!=""){
-			var prompt = new zebra.ui.MLabel("Welcome, " + playerName + ".\nCurrently selected character: " + character + "\n(Click on character to change.)");
+			switch(character) {			
+				case CHARACTERTYPE.PUMPKIN:
+					avatar = p_pic;
+					break;
+				case CHARACTERTYPE.MUSHROOM:
+					avatar = s_pic;
+					break;
+				case CHARACTERTYPE.HUMAN:
+					avatar = h_pic;
+					break;
+				case CHARACTERTYPE.DEVIL:
+					avatar = d_pic;
+					break;			
+			}
+			var prompt = new zebra.ui.MLabel("Welcome, " + playerName + ".\nCurrently selected character:\n(Click on character to change.)");
 			var avatarPan = new zebra.ui.ImagePan(avatar,zebra.ui.MouseListener,[function mouseClicked(e){
 				mainLobby.setVisible(false);
 				showSelectChar();
@@ -340,10 +353,25 @@ function Lobby(){
         newGameButton.setFireParams(true,-1);
         mainLobby.add(newGameButton);
 		
+		var noSessionsToDisplay = new zebra.ui.Panel();
+		noSessionsToDisplay .setLayout(new zebra.layout.RasterLayout(zebra.layout.USE_PS_SIZE));
+		noSessionsToDisplay.setBounds(240,180, 0, 0);
+        mainLobby.add(noSessionsToDisplay);
+		
+		var n = new zebra.ui.Label("No sessions to join. Create one!");
+		n.setLocation(0,30);
+		noSessionsToDisplay.add(n);
+		
 		//JOIN EXISTING GAME
 		var count = 0;
 		setInterval(function(){
-			if (sessionCount != count){
+			if (sessionCount == 0 || sessionCount == undefined){
+				noSessionsToDisplay.setVisible(true);
+				subLobby.setVisible(false);
+			}
+			else if (sessionCount != count && sessionCount!=undefined){
+				noSessionsToDisplay.setVisible(false);
+				subLobby.setVisible(true);
 				count = sessionCount;
 				//console.log("removing..");
 				subLobby.removeAll();

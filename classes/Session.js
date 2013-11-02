@@ -10,6 +10,7 @@ function Session(player,id,m){
 	this.port;
 	this.players = new Array();
 	this.players[0] = player;
+	this.started = false;
 	
 	this.addPlayer = function(playerID){
 		
@@ -31,7 +32,7 @@ function Session(player,id,m){
 		return true;
 		
 	}
-	
+		
 	var isEmpty = function(){
 		
 		if (that.numPlayers==0){

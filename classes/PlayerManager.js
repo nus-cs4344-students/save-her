@@ -40,13 +40,7 @@ function PlayerManager(){
 		return players[playerID].getChar();
 	
 	}
-	
-	this.getCharAvatar = function(playerID){
-	
-		return players[playerID].getCharAvatar();
-	
-	}
-	
+		
 	this.getPlayerName = function(playerID){
 		
 		if (players[playerID] == undefined){

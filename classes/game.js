@@ -23,7 +23,6 @@ function Game(pl, s, m, p, i) {
 
 	player = pl;
     session = s;
-    player_char = player.character;
     mapType = m;
     port = p;
     isHost = i;
@@ -239,42 +238,38 @@ function Game(pl, s, m, p, i) {
         // character is created based on player's selection
         var characterFac = new CharacterFactory();
         var herTextures = [];
-        switch (player_char) {
-            case "pompkin":
-                for (var k = 0; k < 4; k++)
+        switch (player.character) {
+            case CHARACTERTYPE.PUMPKIN:
+				for (var k = 0; k < 4; k++)
                     herTextures.push(PIXI.Texture.fromFrame("herPumpkin000" + k + ".png"));
                 her = new PIXI.MovieClip(herTextures);
                 camera.addChild(her);
                 camera.addChild(herBubble);
                 ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.PUMPKIN, true);
-                player_char = CHARACTERTYPE.PUMPKIN;
                 break;
-            case "shroom":
+            case CHARACTERTYPE.MUSHROOM:
                 for (var k = 0; k < 4; k++)
                     herTextures.push(PIXI.Texture.fromFrame("herMushroom000" + k + ".png"));
                 her = new PIXI.MovieClip(herTextures);
                 camera.addChild(her);
                 camera.addChild(herBubble);
                 ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.MUSHROOM, true);
-                player_char = CHARACTERTYPE.MUSHROOM;
                 break;
-            case "human":
+            case CHARACTERTYPE.HUMAN:
                 for (var k = 0; k < 4; k++)
                     herTextures.push(PIXI.Texture.fromFrame("herHumanStop000" + k + ".png"));
                 her = new PIXI.MovieClip(herTextures);
                 camera.addChild(her);
                 camera.addChild(herBubble);
                 ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.HUMAN, true);
-                player_char = CHARACTERTYPE.HUMAN;
                 break;
-            case "devilz":
+            case CHARACTERTYPE.DEVIL:
                 for (var k = 0; k < 4; k++)
                     herTextures.push(PIXI.Texture.fromFrame("herDevil000" + k + ".png"));
                 her = new PIXI.MovieClip(herTextures);
                 camera.addChild(her);
                 camera.addChild(herBubble);
                 ownCharacter = characterFac.createCharacter(camera, CHARACTERTYPE.DEVIL, true);
-                player_char = CHARACTERTYPE.DEVIL;
                 break;
         }
 
@@ -300,7 +295,7 @@ function Game(pl, s, m, p, i) {
         socket.onopen = function() {
             console.log("socket to game server ready");
             socketReady = true;
-            sendToServer({type: "newPlayer", player: player, characterType:player_char});
+            sendToServer({type: "newPlayer", player: player});
         }
 
         // on receiving a message from server
@@ -318,11 +313,10 @@ function Game(pl, s, m, p, i) {
 				// @EVERYONE - pls note that playerID here is not the same
 				// as the playerID that is mapped to the player upon login
 				// so you cannot do something like playerManager.getPlayerName(playerID)
-				// @ZIXIAN - you will receive messsage.playerName (opponent's name) in here
+				// @ZIXIAN - you will receive messsage.player.name (opponent's name) in here
 				// see what you wanna do with it..
                 case "newPlayer":
-                    console.log(message);
-                    characters[message.playerID] = characterFac.createCharacter(camera, message.characterType, false);
+                    characters[message.playerID] = characterFac.createCharacter(camera, message.player.character, false);
                     bulletManagers[message.playerID] = new BulletManager(camera, characters[message.playerID], false, false);
                     skillManagers[message.playerID] = new SkillManager(camera, characters[message.playerID], bulletManagers[message.playerID], false, false);
                     addPlayerGUI(stage);

@@ -37,6 +37,12 @@ function SessionManager(){
 	
 	}
 	
+	this.startSession = function(sessionID){
+		
+		sessions[sessionID].started = true;
+	
+	}
+	
 	this.removePlayerFromSession = function(sessionID,playerID){
 		console.log("removing player from session");
 		if (!sessions[sessionID].removePlayer(playerID)){
@@ -59,6 +65,19 @@ function SessionManager(){
 	
 	this.getAllSessions = function(){
 		return sessions;
+	}
+	
+	//pending session means the sessions that have not started
+	//where all players in the session are in "waiting" state
+	this.getAllPendingSessions = function(){	
+		var temp = new Array();
+		for (var i = 0; i<sessions.length; i++){
+			if (sessions[i]!=undefined && !sessions[i].started){
+				temp.push(sessions[i]);
+			}
+		}
+		
+		return temp;	
 	}
 }
 
