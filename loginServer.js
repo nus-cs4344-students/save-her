@@ -16,6 +16,9 @@ function loginServer(){
 	var players;
 	
 	var pm,sm;
+	
+	// for managing ports
+	var usedPorts = [];
 
 	var express = require('express');
 	var http = require('http');
@@ -28,6 +31,16 @@ function loginServer(){
 	players = new Object;
 	pm = new PlayerManager();
 	sm = new SessionManager();
+	
+	var isGoodPort = function(port){
+		for (var i = 0; i<usedPorts.length; i++){
+			if (usedPorts[i] == port){
+				return false;
+			}
+		}
+		usedPorts.push(port);
+		return true;
+	}
 	
 	var unicast = function (socket, msg) {
 		socket.write(JSON.stringify(msg));
@@ -80,7 +93,6 @@ function loginServer(){
 					//when player disconnects, remove him from his current game session					
 					if (isExists(players[socket.id])){
 						var lastSession = pm.getLastSession(players[socket.id]);
-						console.log("lastSession = " + lastSession);
 						if (lastSession != undefined){
 							//remove player from the previous session, and if 
 							//nobody else is in that session, remove it.
@@ -138,7 +150,7 @@ function loginServer(){
 							unicast(playerSockets[message.playerID],{type:"join_game",map:s.map,port:s.port,player:pm.getPlayer(message.playerID)});
 							break;
 						case "new_game":
-							var gameport;
+							var game_port;
 							console.log("received new_game, setting up now...");
 							var lastSession = pm.getLastSession(message.playerID);
 							console.log("last game session: "+ lastSession);
@@ -160,28 +172,36 @@ function loginServer(){
 							console.log("session: " + tmp);
 							console.log("sessionInfo: sessionID=" + tmp.sessionID + ", numPlayer = " + tmp.numPlayers + ", map = " + tmp.map);
 							// need to create a child server for the player to connect to
+							
+							game_port = GAMEPORT+Math.floor((Math.random()*100)+1);
+							while (!isGoodPort(game_port)){
+								game_port = GAMEPORT+Math.floor((Math.random()*100)+1);
+							}
 							try{
-								sessionChild[newSessionID] = require('child_process').fork('server.js');
-								console.log("new child created");
-
+								sessionChild[newSessionID] = require('child_process').fork('server.js',[game_port]);
 								sessionChild[newSessionID].send(tmp.map);
+								
+								console.log("new child created");
+								sm.setPort(newSessionID,game_port);
+								console.log("now setting player's session");
+								pm.setSession(message.playerID,sm.getSession(newSessionID));
+								console.log("checking player's session: " + pm.getLastSession(message.playerID).sessionID);
+								unicast(playerSockets[message.playerID],{type:"new_game",sessionID:newSessionID,port:game_port,player:pm.getPlayer(message.playerID)});
 
-								//wait to receive port number from the game server
-								sessionChild[newSessionID].on("message", function(m){
-									gameport = m.port;
-									sm.setPort(newSessionID,gameport);
-									console.log("now setting player's session");
-									pm.setSession(message.playerID,sm.getSession(newSessionID));
-									console.log("checking player's session: " + pm.getLastSession(message.playerID).sessionID);
-									console.log("sending port = " + gameport);
-									unicast(playerSockets[message.playerID],{type:"new_game",sessionID:newSessionID,port:gameport,player:pm.getPlayer(message.playerID)});
+								//wait to receive started status from the game server
+								sessionChild[newSessionID].on("message", function(status){
+									if (status == "started"){
+										console.log("start!");
+										sm.startSession(newSessionID);
+										console.log("started?" + sm.getSession(newSessionID).started);
+									}
 								});
 							} catch (f) {
 								console.log("Child-creating Error: " + f);
 							}							
 							break;
 						case "get_all_sessions":
-							unicast(playerSockets[message.playerID],{type:"get_all_sessions",allSessions:sm.getAllSessions()});
+							unicast(playerSockets[message.playerID],{type:"get_all_sessions",allSessions:sm.getAllPendingSessions()});
 							break;
 					}
 				});	

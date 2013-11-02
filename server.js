@@ -130,7 +130,6 @@ function Server(port) {
 
                         case "newPlayer":
                             if(!gameStarted){
-                                console.log("new game player: "+message.player.name);
                                 playerProfile[socket.id] = message.player;
                                 players[socket.id] = characterFac.createCharacter(null, message.player.character, false);
                                 bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
