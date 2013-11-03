@@ -22,7 +22,7 @@ var isHost;     // game host - decides when game starts
 
 function Game(pl, s, m, p, i) {
 
-	player = pl;
+    player = pl;
     session = s;
     mapType = m;
     port = p;
@@ -80,7 +80,7 @@ function Game(pl, s, m, p, i) {
 
         //initialise GUI
         initGameGUI(stage);
-        if(isHost)
+        if (isHost)
             displayStartButton(stage, sendStartGameMessage);
         else
             displayWait(stage);
@@ -241,7 +241,7 @@ function Game(pl, s, m, p, i) {
         var herTextures = [];
         switch (player.character) {
             case CHARACTERTYPE.PUMPKIN:
-				for (var k = 0; k < 4; k++)
+                for (var k = 0; k < 4; k++)
                     herTextures.push(PIXI.Texture.fromFrame("herPumpkin000" + k + ".png"));
                 her = new PIXI.MovieClip(herTextures);
                 camera.addChild(her);
@@ -311,22 +311,22 @@ function Game(pl, s, m, p, i) {
                 // to clients to create the player in the game
                 // characterType indicates type of character
                 // playerID corresponds to the socket id of the player
-				// @EVERYONE - pls note that playerID here is not the same
-				// as the playerID that is mapped to the player upon login
-				// so you cannot do something like playerManager.getPlayerName(playerID)
-				// @ZIXIAN - you will receive messsage.player.name (opponent's name) in here
-				// see what you wanna do with it..
+                // @EVERYONE - pls note that playerID here is not the same
+                // as the playerID that is mapped to the player upon login
+                // so you cannot do something like playerManager.getPlayerName(playerID)
+                // @ZIXIAN - you will receive messsage.player.name (opponent's name) in here
+                // see what you wanna do with it..
                 case "newPlayer":
-				    opponment.push(message.player.name);
+                    opponment.push(message.player.name);
                     characters[message.playerID] = characterFac.createCharacter(camera, message.player.character, false);
                     bulletManagers[message.playerID] = new BulletManager(camera, characters[message.playerID], false, false);
                     skillManagers[message.playerID] = new SkillManager(camera, characters[message.playerID], bulletManagers[message.playerID], false, false);
                     addPlayerGUI(stage);
                     break;
 
-                // the host of the game starts it
+                    // the host of the game starts it
                 case "hostStartGame":
-                    for (var id in characters){
+                    for (var id in characters) {
                         bulletManagers[id].startOperation();
                         skillManagers[id].startOperation();
                         console.log(id);
@@ -368,10 +368,10 @@ function Game(pl, s, m, p, i) {
 
                 case "hurt":
                     if (typeof(characters[message.p2]) != "undefined")
-                     {
-                         characters[message.p2].hurt(message.dmg);
-                         characters[message.p2].HP =  message.hpLeft;
-                     }
+                    {
+                        characters[message.p2].hurt(message.dmg);
+                        characters[message.p2].HP = message.hpLeft;
+                    }
                     else
                     {
                         ownCharacter.hurt(message.dmg);
@@ -392,7 +392,7 @@ function Game(pl, s, m, p, i) {
                         var currPlayer = characters[message.p2];
                         createExplosionFX(currPlayer.getPosX(), currPlayer.getPosY())
                         currPlayer.hurt(message.dmg);
-                        currPlayer.HP =  message.hpLeft;
+                        currPlayer.HP = message.hpLeft;
                     } else {
                         createExplosionFX(ownCharacter.getPosX(), ownCharacter.getPosY())
                         ownCharacter.hurt(message.dmg);
@@ -426,12 +426,16 @@ function Game(pl, s, m, p, i) {
                         ownBulletManager.stun(message.time);
                     }
                     break;
+                case "interestUpdate":
+                    console.log(message);
+                    characters[message.playerID].setPosition(message.x, message.y);
+                    break;
             }
 
         }
     }
 
-    function sendStartGameMessage(){
+    function sendStartGameMessage() {
         sendToServer({type: "hostStartGame"});
     }
 
@@ -446,13 +450,13 @@ function Game(pl, s, m, p, i) {
     var lastUpdate = Date.now();
     function update() {
 
-        if(firstUpdate){
+        if (firstUpdate) {
             firstUpdate = false;
             lastUpdate = Date.now();
         }
 
         var now = Date.now();
-        deltaTime = (now - lastUpdate)/(FRAMEDURATION);
+        deltaTime = (now - lastUpdate) / (FRAMEDURATION);
         lastUpdate = now;
 
         // update characters
@@ -472,7 +476,7 @@ function Game(pl, s, m, p, i) {
         for (playerID in characters)
         {
             characters[playerID].update();
-            console.log(playerID);
+            //console.log(playerID);
             bulletManagers[playerID].update(characters, ownCharacter, playerID);
             skillManagers[playerID].update(characters, ownCharacter, playerID);
             //alert(playerID);
@@ -493,7 +497,7 @@ function Game(pl, s, m, p, i) {
 
 
     var onDeviceMotion = function(e) {
-        var vx = e.accelerationIncludingGravity.x*5;
+        var vx = e.accelerationIncludingGravity.x * 5;
         if (vx > 14) {
             tiltRight = true;
         }
@@ -501,10 +505,10 @@ function Game(pl, s, m, p, i) {
         else if (vx < -14) {
             tiltLeft = true;
         }
-		else
-		{
-        tiltLeft = false;
-        tiltRight = false;
+        else
+        {
+            tiltLeft = false;
+            tiltRight = false;
         }
 
     }

@@ -79,6 +79,13 @@ var updateInterest = function() {
                 var y2 = players[j].getPosY();
                 if (Math.abs(x1 - x2) < 1600 && Math.abs(y1 - y2) < 1200)
                 {
+                    console.log(interestList[i][j]);
+                    if (interestList[i][j] == false||interestList[i][j] === "undefined")
+                    {
+                        console.log("send "+i);
+                        unicast(sockets[i], {type: "interestUpdate", playerID: j, x: x2, y: y2});
+                        unicast(sockets[j], {type: "interestUpdate", playerID: i, x: x1, y: y1});
+                    }
                     interestList[i][j] = true;
                     interestList[j][i] = true;
                     //console.log("updateInterest "+i);
@@ -107,33 +114,33 @@ function Server(port) {
     serverSocket.on("connection", function(socket) {
         try {
             // send current players to the new player
-           for (var id in sockets){
-				unicast(socket, {type: "newPlayer", playerID: id, player: playerProfile[id]});
-			}
+            for (var id in sockets) {
+                unicast(socket, {type: "newPlayer", playerID: id, player: playerProfile[id]});
+            }
 
             sockets[socket.id] = socket;
 
             // on receiving something from client
             socket.on("data", function(e) {
 
-                setTimeout(function(){
+                setTimeout(function() {
                     console.log(e);
 
                     var broadcast = false;
                     var message = JSON.parse(e);
 
-                    if(players[socket.id] == undefined &&
-                        message.type!="newPlayer")
+                    if (players[socket.id] == undefined &&
+                            message.type != "newPlayer")
                         return;
 
                     switch (message.type) {
 
                         case "newPlayer":
-                            if(!gameStarted){
+                            if (!gameStarted) {
                                 playerProfile[socket.id] = message.player;
                                 players[socket.id] = characterFac.createCharacter(null, message.player.character, false);
                                 bulletManagers[socket.id] = new BulletManager(null, players[socket.id], false, true);
-                                skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id],false, true);
+                                skillManagers[socket.id] = new SkillManager(null, players[socket.id], bulletManagers[socket.id], false, true);
                                 var t = [];
                                 interestList[socket.id] = t;
                                 broadcast = true;
@@ -142,28 +149,28 @@ function Server(port) {
 
                         case "hostStartGame":
                             gameStarted = true;
-							process.send("started");
-                            for (var id in sockets){
+                            process.send("started");
+                            for (var id in sockets) {
                                 bulletManagers[id].startOperation();
                                 skillManagers[id].startOperation();
                             }
                             broadcast = true;
                             break;
 
-                        // jump
+                            // jump
                         case "jump":
                             players[socket.id].jump();
                             broadcast = true;
                             break;
 
-                        // landed from a fall
+                            // landed from a fall
                         case "land":
                             players[socket.id].startInterpolateX(message.PosX);
                             players[socket.id].startInterpolateY(message.PosY);
                             broadcast = true;
                             break;
 
-                        // fall when hovering over nothing
+                            // fall when hovering over nothing
                         case "fall":
                             players[socket.id].setPosition(message.PosX, message.PosY);
                             players[socket.id].fall();
@@ -261,8 +268,8 @@ function Main() {
 
 }
 
-function generateMapCollisionBounds(mapType){
-    switch(mapType){
+function generateMapCollisionBounds(mapType) {
+    switch (mapType) {
         case 0:
             map = map0;
             break;
@@ -289,12 +296,12 @@ function generateMapCollisionBounds(mapType){
 }
 
 //---for managing communication between server.js (child) and loginServer.js (parent)
-process.on('SIGTERM', function () {
-	console.log("exiting");
-	process.exit(0);
+process.on('SIGTERM', function() {
+    console.log("exiting");
+    process.exit(0);
 });
 
-process.on('message', function (m) {
+process.on('message', function(m) {
     generateMapCollisionBounds(parseInt(m));
 });
 
