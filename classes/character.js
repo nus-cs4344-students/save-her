@@ -368,20 +368,23 @@ function Character(){
 						break;
 				}
 			}
+            var inputChanged = false;
+            remoteSpeedX = 0;
 
             // accelerometer controls
             if(tiltRight)
-            {   rightDown = true;
+            {
+                rightDown = true;
                 holdingKey['right'] = true;
+                inputChanged = true;
             }
+            
             if(tiltLeft)
             {
                 leftDown = true;
                 holdingKey['left'] = true;
+                inputChanged = true;
             }
-			
-			var inputChanged = false;
-			remoteSpeedX = 0;
 
 			// just pressed left
 			if(leftDown && !holdingKey['left']){
