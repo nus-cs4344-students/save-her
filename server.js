@@ -244,11 +244,23 @@ function Main() {
     }
 
     // game loop
+    var lastUpdate = Date.now();
+    var firstUpdate = true;
     function update() {
+
+        if(firstUpdate){
+            lastUpdate = Date.now();
+            firstUpdate = false;
+        }
+
+        var now = Date.now();
+        deltaTime = (now - lastUpdate) / (FRAMEDURATION);
+        lastUpdate = now;
 
         for (var id in sockets)
         {
             if (players[id] != undefined) {
+
                 players[id].update();
                 var msgs = bulletManagers[id].update(players, null, id);
                 for (var i = 0; i < msgs.length; i++)

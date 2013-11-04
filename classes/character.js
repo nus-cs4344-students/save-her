@@ -125,6 +125,28 @@ function Character(){
 	var firstUpdate = true;
 	this.update = function(){
 
+		// initialise initial position
+		if(firstUpdate){
+			if(isMine){
+				// spawn at a random platform
+				var platformTopPos = [];
+		        for (var i = 0; i < map.length; i++)
+		            for (var j = 0; j < map[i].length; j++)
+		                if(map[i][j] == 1)
+		                	platformTopPos.push([i,j]);
+
+
+
+		        var randPos = platformTopPos[Math.floor((Math.random()*platformTopPos.length))];
+		        that.setPosition(64*randPos[1] + 32, 64*randPos[0] - 64*2);
+			} else {
+				// spawn at some invisible location, and wait for
+				// opponent to appear
+				that.setPosition(-1000,-1000);
+			}
+			firstUpdate = false;
+		}
+
 		var updateServer = horizontalMovementUpdate();
 		verticalMovementUpdate();
 
@@ -148,28 +170,6 @@ function Character(){
 				that.hurt(20);
 			if(containsArray(keys, 'd'))
 				die();
-		}
-
-		// initialise initial position
-		if(firstUpdate){
-			if(isMine){
-				// spawn at a random platform
-				var platformTopPos = [];
-		        for (var i = 0; i < map.length; i++)
-		            for (var j = 0; j < map[i].length; j++)
-		                if(map[i][j] == 1)
-		                	platformTopPos.push([i,j]);
-
-
-
-		        var randPos = platformTopPos[Math.floor((Math.random()*platformTopPos.length))];
-		        that.setPosition(64*randPos[1] + 32, 64*randPos[0] - 64*2);
-			} else {
-				// spawn at some invisible location, and wait for
-				// opponent to appear
-				that.setPosition(-1000,-1000);
-			}
-			firstUpdate = false;
 		}
 	}
 
@@ -488,6 +488,7 @@ function Character(){
 			inAir = true;
 			setSpeedY(-CHARACTERJUMPSPEED);
 			gravityCounter = 0;
+			goingToJump = false;
 		}
 
 		// send jump command to server

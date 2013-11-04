@@ -16,8 +16,6 @@ var sendToServer = function(msg) {
         socket.send(JSON.stringify(msg));
 }
 
-var deltaTime = 0;
-
 // retrieved from 
 // http://stackoverflow.com/questions/966225/how-can-i-create-a-two-dimensional-array-in-javascript/966938#966938
 function createArray(length) {
@@ -48,6 +46,8 @@ function getRelevantRectangles(posX, posY){
 
     return relevantRects;
 }
+
+var deltaTime = 0;
 
 // accelerometer controls
 var tiltRight = false;

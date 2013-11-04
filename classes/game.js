@@ -446,13 +446,13 @@ function Game(pl, s, m, p, i) {
     }
 
     // game loop
-    var firstUpdate = true;
     var lastUpdate = Date.now();
+    var firstUpdate = true;
     function update() {
 
-        if (firstUpdate) {
-            firstUpdate = false;
+        if(firstUpdate){
             lastUpdate = Date.now();
+            firstUpdate = false;
         }
 
         var now = Date.now();
