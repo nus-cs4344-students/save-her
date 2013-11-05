@@ -2,8 +2,9 @@
 
 var session;
 var port;
-var opponment = [];
-var player_char;
+var opponment = [];   //stores opponments Name
+var opponmentID = []; //stores opponments ID
+var killList = [];    // Array of "killers"
 var player;
 var ownCharacter;		// own player's character
 var characters = [];	// other players' character
@@ -90,7 +91,7 @@ function Game(pl, s, m, p, i) {
 
             // graveyard level
             case 0:
-                playSound(gameMusic, true);
+                playSound(gameMusic0, true);
 
                 map = map0;
 
@@ -119,7 +120,7 @@ function Game(pl, s, m, p, i) {
 
                 // pixel level
             case 1:
-                playSound(gameMusic3, true);
+                playSound(gameMusic1, true);
 
                 map = map1;
 
@@ -317,7 +318,10 @@ function Game(pl, s, m, p, i) {
                 // @ZIXIAN - you will receive messsage.player.name (opponent's name) in here
                 // see what you wanna do with it..
                 case "newPlayer":
+                    //push opponment Name
                     opponment.push(message.player.name);
+                    //push opponment Player ID
+                    opponmentID.push(message.playerID);
                     characters[message.playerID] = characterFac.createCharacter(camera, message.player.character, false);
                     bulletManagers[message.playerID] = new BulletManager(camera, characters[message.playerID], false, false);
                     skillManagers[message.playerID] = new SkillManager(camera, characters[message.playerID], bulletManagers[message.playerID], false, false);
@@ -413,8 +417,14 @@ function Game(pl, s, m, p, i) {
                     break;
                 case "kill":
                     //@zixian
+                    //Push the list of killers
+                    killList.push(message.p1);
                     //p1 killed p2.(ID)
-                    console.log(message.p1+" killed "+message.p2);
+                    console.log("opp: "+opponmentID[0]);
+                    console.log("killist1: "+killList[0]);
+                    console.log("killist2: "+killList[1]);
+                    console.log("killer = "+ message.p1);
+                    console.log(message.p1+" killed  "+message.p2);
                     break;
                 case "stun":
                     if (typeof(characters[message.p2]) != "undefined")

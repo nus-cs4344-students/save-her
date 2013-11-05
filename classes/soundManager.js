@@ -1,9 +1,9 @@
 var context;
 
 // music
-var gameMusic = "Sounds/World2.mp3";
-var gameMusic2 = "Sounds/World1.mp3";
-var gameMusic3 = "Sounds/World3_2.mp3";
+var gameMusic0 = "Sounds/World0.mp3";
+var gameMusic1 = "Sounds/World1.mp3";
+var gameMusic2 = "Sounds/World2.mp3";
 
 // sound
 var jumpSound = "Sounds/JumpSound.wav";
@@ -14,6 +14,10 @@ var bulletSound = "Sounds/bullet1.wav";
 
 // bullet hit
 var bulletHit = "Sounds/bulletHit.wav";
+
+// Specials
+
+
 
 // initialise before making any play sounds call
 function initSounds(){

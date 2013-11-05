@@ -6,6 +6,7 @@ var health_value;
 var HPIcons = [];
 var stage_copy;
 var died = 1;
+var opp = [];
 
 // initialise before making any play sounds call
 function initGameGUI(stage){
@@ -76,17 +77,18 @@ function displayStartButton(stage, callback){
 
 
 
-function displayBackButton(stage){
+function displayBackButton(){
     var BackText = new PIXI.Sprite(PIXI.Texture.fromImage("start-button.png"));
+    BackText.buttonMode = true;
+    BackText.interactive = true;
     BackText.anchor.x = 0.5;
     BackText.anchor.y = 0.5;
     BackText.position.x = 400;
-    BackText.position.y = 450;
+    BackText.position.y = 550;
     BackText.scale.x = 1;
     BackText.scale.y = 1;
-    BackText.alpha = 0.5;
-    stage.addChild(BackText);
-
+    BackText.alpha = 1;
+    stage_copy.addChild(BackText);
     BackText.setInteractive(true);
     BackText.mouseover = function(mouseData){
         BackText.alpha = 1;
@@ -99,7 +101,10 @@ function displayBackButton(stage){
         BackText.scale.y = 2.2;
     }
     BackText.mouseup = function(mouseData){
-        stage.removeChild(BackText);
+        stage_copy.removeChild(BackText);
+        //do something
+        var win = window.open(url,"www.google.com");
+        win.focus();
     }
     BackText.touchstart = function(mouseData){
         BackText.scale.x = 2.2;
@@ -107,7 +112,9 @@ function displayBackButton(stage){
         BackText.alpha = 1;
     }
     BackText.touchend = function(mouseData){
-        stage.removeChild(BackText);
+        stage_copy.removeChild(BackText);
+        var win2 = window.open(url,"www.google.com");
+        win2.focus();
     }
 }
 
@@ -226,9 +233,8 @@ function addPlayerGUI(stage){
     var killsText = new PIXI.BitmapText("", {font: "28px 04b03", align: "left"});
     killsText.position.x = 445;
     killsText.position.y = nextGUIY;
-    killsText.setText("0");
     stage.addChild(killsText);// example
-    //killsTexts.push(killsText);
+    opp.push(killsText);
 
 
     var texture = PIXI.Texture.fromImage("HeartBar.png");
@@ -288,11 +294,29 @@ function gameGUIUpdate(){
         //display own player name
         Users[0].setText(player.name);
 
+        //display kills
+        //Get the list of KillList[], compare with all the opponmentIDs
+        //increment the "count" if there is a match
+        //take the total number of KillList minus "count"
+
+        var count = 0;
+        var final_count = 0;
+        var x,y;
+        for(x = 0; x<killList.length;x++)
+        {
+            for(y = 0; y<opponmentID.length;y++)
+            if(killList[x]==opponmentID[y])
+                count++;
+        }
+        final_count = killList.length - count;
+        opp[0].setText(final_count.toString());
+
+        //display scoreboard if player dies
         if(ownCharacter.lives == 0 && died == 1)
         {
             gameover();
             scoreBoard();
-            displayBackButton(stage_copy);
+            displayBackButton();
             died++;
         }
     }
@@ -316,6 +340,19 @@ function gameGUIUpdate(){
         LivesTexts[i].setText(characters[playerID].lives.toString());
         Users[i].setText(opponment[i-1].toString());
 
+        //display kills
+        //Get the list of KillList[], compare with all the opponmentIDs
+        //increment the "count" if there is a match with each opponmentID
+        //"count" will be the total number of kills.
+
+        var count = 0;
+        var x;
+        for(x = 0; x<killList.length;x++)
+        {
+            if(killList[x]==opponmentID[i-1])
+            count++;
+        }
+       opp[i].setText(count.toString());
     }
 
 }
