@@ -47,7 +47,14 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                         if (players[j].isColliding(bullets[i].getRect()))
                         {
                             bullets[i].destroy();
+                            var HPbefore = players[j].HP;
                             players[j].hurt(bullets[i].getDamage());
+                            var HPafter = players[j].HP;
+                            if(HPbefore>0&&HPafter<=0)
+                            {
+                                var killMsg = {type: "kill", p1: id, p2: j};
+                                msgs.push(killMsg);
+                            }
                             hit = true;
                             var msg = {type: "hurt", p1: id, p2: j, dmg: bullets[i].getDamage(), hpLeft:players[j].HP};
                             msgs.push(msg);
@@ -146,7 +153,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 isGoingToShoot = true;
 
             if(isGoingToShoot){
-                that.shoot();
+                setTimeout(that.shoot(),50);
                 playSound(bulletSound, false);
             }
 

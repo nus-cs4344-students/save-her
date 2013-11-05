@@ -411,7 +411,11 @@ function Game(pl, s, m, p, i) {
                         skillManagers[message.playerID].skill();
                     }
                     break;
-
+                case "kill":
+                    //@zixian
+                    //p1 killed p2.(ID)
+                    console.log(message.p1+" killed "+message.p2);
+                    break;
                 case "stun":
                     if (typeof(characters[message.p2]) != "undefined")
                     {

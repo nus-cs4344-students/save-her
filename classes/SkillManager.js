@@ -66,8 +66,15 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                                 //console.log(players[j].getPosY()+" "+minesY[i]);
                                 if (players[j].isColliding(new Rectangle(stage, minesX[i], minesY[i], mineSize, mineSize)))
                                 {
+                                    var HPbefore = players[j].HP;
                                     players[j].hurt(mineDamage);
-                                    var msg = {type: "mineHurt", p1: id, p2: j, dmg: mineDamage, mineId: i, hpLeft:players[j].HP};
+                                    var HPafter = players[j].HP;
+                                    if (HPbefore > 0 && HPafter <= 0)
+                                    {
+                                        var killMsg = {type: "kill", p1: id, p2: j};
+                                        msgs.push(killMsg);
+                                    }
+                                    var msg = {type: "mineHurt", p1: id, p2: j, dmg: mineDamage, mineId: i, hpLeft: players[j].HP};
                                     msgs.push(msg);
                                     mines.splice(i, 1);
                                     minesX.splice(i, 1);
@@ -94,7 +101,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                         {
                             if (players[j].isCollidingCircle(player.getPosX(), player.getPosY(), aoeRadius))
                             {
-                                
+
                                 hit = true;
                                 var now = (new Date()).getTime();
 
@@ -103,8 +110,15 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                                 //console.log(lastAoeHurtTime[j]);
                                 if (now - lastAoeHurtTime[j] >= 1000)
                                 {
+                                    var HPbefore = players[j].HP;
                                     players[j].hurt(aoeDamage);
-                                    var msg = {type: "hurt", p1: id, p2: j, dmg: aoeDamage, hpLeft:players[j].HP};
+                                    var HPafter = players[j].HP;
+                                    if (HPbefore > 0 && HPafter <= 0)
+                                    {
+                                        var killMsg = {type: "kill", p1: id, p2: j};
+                                        msgs.push(killMsg);
+                                    }
+                                    var msg = {type: "hurt", p1: id, p2: j, dmg: aoeDamage, hpLeft: players[j].HP};
                                     console.log(msg);
                                     msgs.push(msg);
                                     lastAoeHurtTime[j] = now;
@@ -202,15 +216,15 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                         if (keys[i] == 'x')
                             isGoingToUseSkill = true;
 
-                    if(player.touchSkill)
+                    if (player.touchSkill)
                         isGoingToUseSkill = true;
 
-                    if(isGoingToUseSkill){
-                        if(mineLeft >= 1){
+                    if (isGoingToUseSkill) {
+                        if (mineLeft >= 1) {
                             var now = (new Date()).getTime();
                             if (now - lastMineTime >= 5000)
                             {
-                                that.skill();
+                                setTimeout(that.skill(), 50);
                                 lastMineTime = now;
                             }
                         }
@@ -233,10 +247,10 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                             if (keys[i] == 'x')
                                 isGoingToUseSkill = true;
 
-                        if(player.touchSkill)
+                        if (player.touchSkill)
                             isGoingToUseSkill = true;
 
-                        if(isGoingToUseSkill){
+                        if (isGoingToUseSkill) {
                             that.skill();
                             that.cd = 60;
                         }
@@ -334,9 +348,9 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 setTimeout(function() {
                     if (!isServer)
                         for (var i = 0; i < 8; i++)
-                         {
-                             stage.removeChild(aoe[i]);
-                         }
+                        {
+                            stage.removeChild(aoe[i]);
+                        }
                     aoe = [];
                     aoeOn = false;
                 }, 10000);
