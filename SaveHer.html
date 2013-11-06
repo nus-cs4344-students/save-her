@@ -9,6 +9,7 @@
                 text-align:center}
 		</style>
 		<meta name="touch-event-mode" content="native">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=no" />
 	</head>
 	<body>
 		<h1>
@@ -47,4 +48,12 @@
 	<script type="text/javascript" src="classes/SessionManager.js"></script>
 	<script type="text/javascript" src="classes/Session.js"></script>
 	<script type="text/javascript" src="classes/game.js"></script>
+    <script type="text/javascript">
+        $(document).bind(
+                'touchmove',
+                function(e) {
+                    e.preventDefault();
+                }
+        );
+    </script>
 </html>
