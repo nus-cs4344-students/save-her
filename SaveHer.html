@@ -1,4 +1,18 @@
 <!DOCTYPE html>
+
+<style type="text/css">
+    #warning-message { display: none; }
+    @media only screen and (orientation:portrait){
+        #wrapper { display:none; }
+        #warning-message { display:block; }
+    }
+    @media only screen and (orientation:landscape){
+        #warning-message { display:none; }
+    }
+</style>
+
+<div id="wrapper">
+
 <html>
 	<head>
 		<style>
@@ -57,3 +71,9 @@
         );
     </script>
 </html>
+
+</div>
+
+<div id="warning-message">
+    Please rotate the device to landscape mode. Thank you!
+</div>
