@@ -1,12 +1,23 @@
+var PlayerText = [];
 var HPTexts = [];
 var LivesTexts = [];
-var Users = [];
+var KillText = [];
+var ScoreText = [];
+var LText = [];
+
+var HP_value = [];
+var Lives_value = [];
+var Kill_value = [];
+var players_string  = [];
+
 var cdText;
 var health_value;
 var HPIcons = [];
 var stage_copy;
 var died = 1;
-var opp = [];
+
+
+
 
 // initialise before making any play sounds call
 function initGameGUI(stage){
@@ -17,6 +28,7 @@ function initGameGUI(stage){
     cdText.position.x = 700;
     cdText.position.y = 40;
     stage.addChild(cdText);
+
 }
 
 var waitText;
@@ -75,52 +87,6 @@ function displayStartButton(stage, callback){
     }
 }
 
-
-
-function displayBackButton(){
-    var BackText = new PIXI.Sprite(PIXI.Texture.fromImage("start-button.png"));
-    BackText.buttonMode = true;
-    BackText.interactive = true;
-    BackText.anchor.x = 0.5;
-    BackText.anchor.y = 0.5;
-    BackText.position.x = 400;
-    BackText.position.y = 550;
-    BackText.scale.x = 1;
-    BackText.scale.y = 1;
-    BackText.alpha = 1;
-    stage_copy.addChild(BackText);
-    BackText.setInteractive(true);
-    BackText.mouseover = function(mouseData){
-        BackText.alpha = 1;
-    }
-    BackText.mouseout = function(mouseData){
-        BackText.alpha = 0.5;
-    }
-    BackText.mousedown = function(mouseData){
-        BackText.scale.x = 2.2;
-        BackText.scale.y = 2.2;
-    }
-    BackText.mouseup = function(mouseData){
-        stage_copy.removeChild(BackText);
-        //do something
-        var win = window.open(url,"www.google.com");
-        win.focus();
-    }
-    BackText.touchstart = function(mouseData){
-        BackText.scale.x = 2.2;
-        BackText.scale.y = 2.2;
-        BackText.alpha = 1;
-    }
-    BackText.touchend = function(mouseData){
-        stage_copy.removeChild(BackText);
-        var win2 = window.open(url,"www.google.com");
-        win2.focus();
-    }
-}
-
-
-
-
 function concludeStartMessages(stage){
     if(waitText != undefined)
         stage.removeChild(waitText);
@@ -157,9 +123,12 @@ function concludeStartMessages(stage){
                 }, FRAMEDURATION);
 
             }, 300);
+
         }
 
     }, FRAMEDURATION);
+
+
 }
 
 function displayText(stage)
@@ -213,7 +182,7 @@ function addPlayerGUI(stage){
     user1.position.x = 10;
     user1.position.y = nextGUIY;
     stage.addChild(user1);
-    Users.push(user1);
+    PlayerText.push(user1);
 
 
     var hpText = new PIXI.BitmapText("", {font: "28px 04b03", align: "left"});
@@ -234,7 +203,7 @@ function addPlayerGUI(stage){
     killsText.position.x = 445;
     killsText.position.y = nextGUIY;
     stage.addChild(killsText);// example
-    opp.push(killsText);
+    KillText.push(killsText);
 
 
     var texture = PIXI.Texture.fromImage("HeartBar.png");
@@ -245,10 +214,13 @@ function addPlayerGUI(stage){
     HPIcons.push(health1);
 
     nextGUIY += 30;
+
+
+
 }
 
 
-function gameover()
+function gameover(x)
 {
 
     var gameover = new PIXI.Sprite(PIXI.Texture.fromImage("scoreboard.png"));
@@ -262,21 +234,30 @@ function gameover()
     var gameoverText = new PIXI.BitmapText("", {font: "28px 04b03", align: "left"});
     gameoverText.position.x = 110;
     gameoverText.position.y = 110;
-    gameoverText.setText("Game Over, you are dead!");
+    if(x==0)
+    {
+        gameoverText.setText("Game Over, you are dead!");
+    }
+    if(x==1)
+    {
+        gameoverText.setText("Congratulations! You are the winner!");
+    }
+    var sText = new PIXI.BitmapText("", {font: "28px 04b03", align: "left"});
+    sText.position.x = 110;
+    sText.position.y = 150;
+    ScoreText.push(sText);
+
+    var lText = new PIXI.BitmapText("", {font: "28px 04b03", align: "left"});
+    lText.position.x = 110;
+    lText.position.y = 180;
+    LText.push(lText);
 
     stage_copy.addChild(gameover);
     stage_copy.addChild(gameoverText);
+    stage_copy.addChild(sText);
+    stage_copy.addChild(lText);
 
-}
-
-function scoreBoard()
-{
-    var scoreText = new PIXI.BitmapText("", {font: "28px 04b03", align: "left"});
-    scoreText.position.x = 110;
-    scoreText.position.y = 150;
-    scoreText.setText("Score Board:");
-    stage_copy.addChild(scoreText);
-
+    autoRefresh(5000);
 
 }
 
@@ -289,10 +270,15 @@ function gameGUIUpdate(){
         var health1;
         health1 = (health_value/100)*200;
         HPIcons[0].width = health1;
-        //display live text
+        HP_value[0] = ownCharacter.HP;
+
+        //display live text & copy lives value to array
         LivesTexts[0].setText(ownCharacter.lives.toString());
-        //display own player name
-        Users[0].setText(player.name);
+        Lives_value[0] = ownCharacter.lives;
+
+        // /display own player name
+        PlayerText[0].setText(player.name);
+        players_string[0] = player.name;
 
         //display kills
         //Get the list of KillList[], compare with all the opponmentIDs
@@ -305,20 +291,24 @@ function gameGUIUpdate(){
         for(x = 0; x<killList.length;x++)
         {
             for(y = 0; y<opponmentID.length;y++)
-            if(killList[x]==opponmentID[y])
-                count++;
+                if(killList[x]==opponmentID[y])
+                    count++;
         }
         final_count = killList.length - count;
-        opp[0].setText(final_count.toString());
+        KillText[0].setText(final_count.toString());
+        Kill_value[0] = final_count;
 
         //display scoreboard if player dies
         if(ownCharacter.lives == 0 && died == 1)
         {
-            gameover();
-            scoreBoard();
-            displayBackButton();
+            gameover(0);
+            totalplayersleft();
+            mostkills();
             died++;
         }
+        //else
+            checkiflast();
+
     }
     if(ownSkillManager!=null){
         cdText.setText("cd: "+ownSkillManager.scd.toString());
@@ -336,10 +326,12 @@ function gameGUIUpdate(){
         var health2;
         health2 = (health_value/100)*200;
         HPIcons[i].width = health2;
+        HP_value[0] = characters[playerID].HP;
         //display live text
         LivesTexts[i].setText(characters[playerID].lives.toString());
-        Users[i].setText(opponment[i-1].toString());
-
+        Lives_value[i] = characters[playerID].lives;
+        PlayerText[i].setText(opponment[i-1].toString());
+        players_string[i] = opponment[i-1];
         //display kills
         //Get the list of KillList[], compare with all the opponmentIDs
         //increment the "count" if there is a match with each opponmentID
@@ -350,9 +342,69 @@ function gameGUIUpdate(){
         for(x = 0; x<killList.length;x++)
         {
             if(killList[x]==opponmentID[i-1])
-            count++;
+                count++;
         }
-       opp[i].setText(count.toString());
+        KillText[i].setText(count.toString());
+        Kill_value[i] = count;
+    }
+}
+
+function totalplayersleft()
+{
+    //check for sole survior
+    var y, counter = 0;
+    for(y = 0; y<Lives_value.length;y++)
+    {
+        if(Lives_value[y] == 0)
+            counter++;
     }
 
+    if(counter == Lives_value.length-1)
+    {
+        var largest = Math.max.apply(Math, Lives_value);
+        var a = Lives_value.indexOf(largest);
+        LText[0].setText("Last player left: "+players_string[a]);
+    }
+    else
+    {
+        LText[0].setText("Total players left: "+(Lives_value.length-1).toString());
+    }
+
+
+
+}
+
+
+function checkiflast()
+{
+
+if(Lives_value.length>1)
+{
+        //check for all players dead
+        var y, counter = 0;
+        for(y = 1; y<Lives_value.length;y++)
+        {
+            if(Lives_value[y] == 0)
+                counter++;
+        }
+
+        if(counter == Lives_value.length-1)
+        {
+            gameover(1);
+            totalplayersleft();
+            mostkills();
+        }
+}
+}
+
+function mostkills()
+{
+    var largest = Math.max.apply(Math, Kill_value);
+    var idx = Kill_value.indexOf(largest);
+    ScoreText[0].setText("Highest Number of kills: "+players_string[idx]);
+
+}
+
+function autoRefresh(refreshPeriod) {
+    setTimeout("window.location.reload();",refreshPeriod);
 }
