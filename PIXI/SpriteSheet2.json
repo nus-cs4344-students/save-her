@@ -1416,9 +1416,17 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":39,"h":10},
 	"sourceSize": {"w":39,"h":10}
 },
+"scoreboard.png":
+{
+	"frame": {"x":349,"y":1513,"w":600,"h":400},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":600,"h":400},
+	"sourceSize": {"w":600,"h":400}
+},
 "sea.png":
 {
-	"frame": {"x":349,"y":1513,"w":446,"h":60},
+	"frame": {"x":2,"y":1915,"w":446,"h":60},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":446,"h":60},
@@ -1426,7 +1434,7 @@
 },
 "start-button.png":
 {
-	"frame": {"x":797,"y":1513,"w":164,"h":34},
+	"frame": {"x":450,"y":1915,"w":164,"h":34},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":164,"h":34},
@@ -1439,6 +1447,6 @@
 	"format": "RGBA8888",
 	"size": {"w":1024,"h":2048},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:07f6467fc55f19a72dbd3286c8c974ad:1/1$"
+	"smartupdate": "$TexturePacker:SmartUpdate:bb7964fca6b6fc36f06e9e3e754cb3db:1/1$"
 }
 }
