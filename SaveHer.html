@@ -26,50 +26,49 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=no" />
 	</head>
 	<body>
-		<h1>
-			<img src="./images/logo.png" width="10%"></img>
-		</h1>
+		<!-- from open source libraries -->
+		<script src="PIXI/jquery-1.8.3.min.js"></script>
+		<script src="PIXI/pixi.js"></script>					<!--rendering library-->
+		<script src="classes/keyboard.js"></script>				<!--input detection library-->
+		<script src="classes/buffer-loader.js"></script>		<!--sound loading library-->
+		<script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+		<script src="classes/zebra-master/lib/zebra/zebra.min.js" type='text/javascript'></script>
+		<script type="text/javascript">
+			var global = {}; // For node.js require
+		</script>
+		
+		<!-- custom scripts -->
+		<script src="classes/character.js"></script>
+		<script src="classes/characterFactory.js"></script>
+		<script src="classes/bullet.js"></script>
+		<script src="classes/bulletManager.js"></script>
+		<script src="classes/SkillManager.js"></script>
+		<script src="classes/constants.js"></script>
+		<script src="classes/rectangle.js"></script>
+		<script src="classes/utility.js"></script>
+		<script src="classes/soundManager.js"></script>
+		<script src="classes/gameGUIManager.js"></script>
+		<script src="classes/particleManager.js"></script>
+
+		<script type="text/javascript" src="classes/Lobby.js"></script>
+		<script type="text/javascript" src="classes/PlayerManager.js"></script>
+		<script type="text/javascript" src="classes/Player.js"></script>
+		<script type="text/javascript" src="classes/SessionManager.js"></script>
+		<script type="text/javascript" src="classes/Session.js"></script>
+		<script type="text/javascript" src="classes/game.js"></script>
+		<script type="text/javascript">
+			$(document).bind(
+					'touchmove',
+					function(e) {
+						e.preventDefault();
+					}
+			);
+		</script>
+		
 	</body>
 	
 	
-	<!-- from open source libraries -->
-	<script src="PIXI/jquery-1.8.3.min.js"></script>
-	<script src="PIXI/pixi.js"></script>					<!--rendering library-->
-	<script src="classes/keyboard.js"></script>				<!--input detection library-->
-	<script src="classes/buffer-loader.js"></script>		<!--sound loading library-->
-	<script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
-	<script src="classes/zebra-master/lib/zebra/zebra.min.js" type='text/javascript'></script>
-	<script type="text/javascript">
-		var global = {}; // For node.js require
-	</script>
 	
-	<!-- custom scripts -->
-	<script src="classes/character.js"></script>
-	<script src="classes/characterFactory.js"></script>
-	<script src="classes/bullet.js"></script>
-	<script src="classes/bulletManager.js"></script>
-	<script src="classes/SkillManager.js"></script>
-	<script src="classes/constants.js"></script>
-	<script src="classes/rectangle.js"></script>
-	<script src="classes/utility.js"></script>
-	<script src="classes/soundManager.js"></script>
-	<script src="classes/gameGUIManager.js"></script>
-	<script src="classes/particleManager.js"></script>
-
-	<script type="text/javascript" src="classes/Lobby.js"></script>
-	<script type="text/javascript" src="classes/PlayerManager.js"></script>
-	<script type="text/javascript" src="classes/Player.js"></script>
-	<script type="text/javascript" src="classes/SessionManager.js"></script>
-	<script type="text/javascript" src="classes/Session.js"></script>
-	<script type="text/javascript" src="classes/game.js"></script>
-    <script type="text/javascript">
-        $(document).bind(
-                'touchmove',
-                function(e) {
-                    e.preventDefault();
-                }
-        );
-    </script>
 </html>
 
 </div>
