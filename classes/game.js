@@ -13,6 +13,7 @@ var ownBulletManager;	// bullet manager
 var ownSkillManager;
 var bulletManagers = [];
 var skillManagers = [];
+var pointer = [];
 var mapRects;		// collision rectangles for map
 
 var camera;
@@ -28,7 +29,7 @@ function Game(pl, s, m, p, i) {
     mapType = m;
     port = p;
     isHost = i;
-
+    var pointerTexture;
     // initialise sounds and music
     //initSounds();
 
@@ -181,7 +182,7 @@ function Game(pl, s, m, p, i) {
         var herPositionX;
         var herPositionY;
         var rect;
-
+        pointerTexture = PIXI.Texture.fromImage("AOE.png");
         for (var i = 0; i < map.length; i++) {
             for (var j = 0; j < map[i].length; j++) {
 
@@ -325,6 +326,13 @@ function Game(pl, s, m, p, i) {
                     characters[message.playerID] = characterFac.createCharacter(camera, message.player.character, false);
                     bulletManagers[message.playerID] = new BulletManager(camera, characters[message.playerID], false, false);
                     skillManagers[message.playerID] = new SkillManager(camera, characters[message.playerID], bulletManagers[message.playerID], false, false);
+                    var pointerT = new PIXI.Sprite(pointerTexture);
+                    pointerT.position.x = 1000;
+                    pointerT.position.y = 1000;
+                    pointerT.width = 50;
+                    pointerT.height = 50;
+                    pointer[message.playerID] = pointerT;
+                    stage.addChild(pointer[message.playerID]);
                     addPlayerGUI(stage);
                     break;
 
@@ -420,11 +428,11 @@ function Game(pl, s, m, p, i) {
                     //Push the list of killers
                     killList.push(message.p1);
                     //p1 killed p2.(ID)
-                    console.log("opp: "+opponmentID[0]);
-                    console.log("killist1: "+killList[0]);
-                    console.log("killist2: "+killList[1]);
-                    console.log("killer = "+ message.p1);
-                    console.log(message.p1+" killed  "+message.p2);
+                    console.log("opp: " + opponmentID[0]);
+                    console.log("killist1: " + killList[0]);
+                    console.log("killist2: " + killList[1]);
+                    console.log("killer = " + message.p1);
+                    console.log(message.p1 + " killed  " + message.p2);
                     break;
                 case "stun":
                     if (typeof(characters[message.p2]) != "undefined")
@@ -452,7 +460,56 @@ function Game(pl, s, m, p, i) {
     function sendStartGameMessage() {
         sendToServer({type: "hostStartGame"});
     }
+    function updatePointer(id) {
+        //console.log(pointer[id].position.x+"  "+pointer[id].position.y);
 
+        var x1 = ownCharacter.getPosX();
+        var y1 = ownCharacter.getPosY();
+        var x2 = characters[id].getPosX();
+        var y2 = characters[id].getPosY();
+        var xt = Math.abs(x1 - x2);
+        var yt = Math.abs(y1 - y2);
+        var x;
+        var y;
+        //console.log(xt + "  " + yt);
+        if ((xt < 800 && yt < 600) && !(xt < 400 && yt < 300))
+        {
+            if (xt / yt > 4 / 3)
+            {
+                if (x2 < x1)
+                {
+                    x = 0;
+                }
+                else
+                {
+                    x = 750;
+                    //console.log(x1+" "+y1+" "+x2+" "+y2)
+                }
+                y = (y2 - y1) * 400 / xt+300;
+            }
+            else
+            {
+                if (y2 < y1)
+                {
+                    y = 0;
+                }
+                else
+                {
+                    y = 550;
+                }
+                x = (x2 - x1) * 300 / yt+400;
+            }
+            pointer[id].position.x = x;
+            pointer[id].position.y = y;
+        }
+        else
+        {
+            if (pointer[id].position.x != 1000)
+            {
+                pointer[id].position.x = 1000;
+            }
+        }
+    }
     // render loop
     function animate() {
         requestAnimFrame(animate);
@@ -464,7 +521,7 @@ function Game(pl, s, m, p, i) {
     var firstUpdate = true;
     function update() {
 
-        if(firstUpdate){
+        if (firstUpdate) {
             lastUpdate = Date.now();
             firstUpdate = false;
         }
@@ -472,7 +529,6 @@ function Game(pl, s, m, p, i) {
         var now = Date.now();
         deltaTime = (now - lastUpdate) / (FRAMEDURATION);
         lastUpdate = now;
-
         // update characters
         if (ownCharacter != null) {
             // update character
@@ -490,6 +546,7 @@ function Game(pl, s, m, p, i) {
         for (playerID in characters)
         {
             characters[playerID].update();
+            updatePointer(playerID);
             //console.log(playerID);
             bulletManagers[playerID].update(characters, ownCharacter, playerID);
             skillManagers[playerID].update(characters, ownCharacter, playerID);
@@ -507,25 +564,26 @@ function Game(pl, s, m, p, i) {
                 cameraBack.position.x = camera.position.x / 15;
                 break;
         }
+
     }
 
 
-            var onDeviceMotion = function(e) {
-                var vy = e.accelerationIncludingGravity.y * 5;
-                if (vy > 14) {
-                    tiltRight = true;
-                }
+    var onDeviceMotion = function(e) {
+        var vy = e.accelerationIncludingGravity.y * 5;
+        if (vy > 14) {
+            tiltRight = true;
+        }
 
-                else if (vy < -14) {
-                    tiltLeft = true;
-                }
-                else
-                {
-                    tiltLeft = false;
-                    tiltRight = false;
-                }
+        else if (vy < -14) {
+            tiltLeft = true;
+        }
+        else
+        {
+            tiltLeft = false;
+            tiltRight = false;
+        }
 
-            }
+    }
 
 }
 
