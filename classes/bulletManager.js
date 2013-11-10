@@ -153,14 +153,14 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                 isGoingToShoot = true;
 
             if(isGoingToShoot){
-                setTimeout(that.shoot(),50);
+                if (player.isFacingRight())
+                    dir = 0;
+                else
+                    dir = 1;
+
+                that.shoot();
                 playSound(bulletSound, false);
             }
-
-            if (player.isFacingRight())
-                dir = 0;
-            else
-                dir = 1;
         }
     }
 
@@ -181,43 +181,50 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
         dir = dirA;
     }
     this.shoot = function() {
-        var x = player.getPosX();
-        var y = player.getPosY();
         var now = (new Date()).getTime();
         if (now - that.lastShootTime > that.shootDuration) {
 
             if (that.isMine)
                 sendToServer({type: "shoot", dir: dir});
 
-            var yOffset = 0;
-            // huamn holds gun higher
-            if (player.characterType == CHARACTERTYPE.HUMAN)
-                yOffset = -10;
+            setTimeout(delayedShoot, 50);
 
-            // create firing effect
-            if (!ISSERVER)
-                createFiringFX(x, y + yOffset, dir);
-
-            if (dir == 0) {
-                var startX = x;
-                var startY = y;
-                //console.log(x+" "+y);
-
-                var newBullet = new bullet(stage, x, y + yOffset, speed, bulletPath, isServer, dmg);
-
-                //sendToServer({type:"bullet",x:x,y:y,speed:20,tex:"PIXI/bulletRight.png"});
-                bullets.push(newBullet);
-                newBullet.move();
-            }
-            if (dir == 1) {
-                var startX = x;
-                var startY = y;
-                var newBullet = new bullet(stage, x, y + yOffset, 0 - speed, bulletPath, isServer, dmg);
-                bullets.push(newBullet);
-                //sendToServer({type:"bullet",x:x,y:y,speed:-20,tex:"PIXI/bulletLeft.png"});
-                newBullet.move();
-            }
             that.lastShootTime = now;
+        }
+    }
+
+    var delayedShoot = function() {
+
+        var x = player.getPosX();
+        var y = player.getPosY();
+
+        var yOffset = 0;
+        // huamn holds gun higher
+        if (player.characterType == CHARACTERTYPE.HUMAN)
+            yOffset = -10;
+
+        // create firing effect
+        if (!ISSERVER)
+            createFiringFX(x, y + yOffset, dir);
+
+        if (dir == 0) {
+            var startX = x;
+            var startY = y;
+            //console.log(x+" "+y);
+
+            var newBullet = new bullet(stage, x, y + yOffset, speed, bulletPath, isServer, dmg);
+
+            //sendToServer({type:"bullet",x:x,y:y,speed:20,tex:"PIXI/bulletRight.png"});
+            bullets.push(newBullet);
+            newBullet.move();
+        }
+        if (dir == 1) {
+            var startX = x;
+            var startY = y;
+            var newBullet = new bullet(stage, x, y + yOffset, 0 - speed, bulletPath, isServer, dmg);
+            bullets.push(newBullet);
+            //sendToServer({type:"bullet",x:x,y:y,speed:-20,tex:"PIXI/bulletLeft.png"});
+            newBullet.move();
         }
 
     }

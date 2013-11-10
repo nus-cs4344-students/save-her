@@ -1,9 +1,9 @@
 var context;
 
 // music
-var gameMusic0 = "Sounds/World0.mp3";
-var gameMusic1 = "Sounds/World1.mp3";
-var gameMusic2 = "Sounds/World2.mp3";
+var gameMusic0 = "Sounds/World2.mp3";
+var gameMusic1 = "Sounds/World3.mp3";
+var gameMusic2 = "Sounds/World1.mp3";
 
 // sound
 var jumpSound = "Sounds/JumpSound.wav";

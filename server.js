@@ -62,7 +62,7 @@ var broadcastWithInterest = function(socket, msg) {
     //console.log("bw "+socket);
     for (id in interestList[socket.id])
     {
-        console.log(id + " " + interestList[socket.id][id]);
+        //console.log(id + " " + interestList[socket.id][id]);
         if (interestList[socket.id][id] == true)
             sockets[id].write(messageToSend);
     }
@@ -124,7 +124,7 @@ function Server(port) {
             socket.on("data", function(e) {
 
                 setTimeout(function() {
-                    console.log(e);
+                    //console.log(e);
 
                     var broadcast = false;
                     var message = JSON.parse(e);
@@ -163,7 +163,8 @@ function Server(port) {
                             broadcast = true;
                             break;
 
-                            // landed from a fall
+                            // force pos at start / landed from a fall
+                        case "forcePlayerPos":
                         case "land":
                             players[socket.id].startInterpolateX(message.PosX);
                             players[socket.id].startInterpolateY(message.PosY);
@@ -181,6 +182,7 @@ function Server(port) {
                             if (!players[socket.id].isObsolete(message.Seq)) {
                                 players[socket.id].setSpeedX(message.SpeedX);
                                 players[socket.id].startInterpolateX(message.PosX);
+                                players[socket.id].setFaceRight(message.FaceR);
                                 broadcast = true;
                             }
                             break;
@@ -260,6 +262,8 @@ function Main() {
         for (var id in sockets)
         {
             if (players[id] != undefined) {
+
+                //console.log(players[id].getPos());
 
                 players[id].update();
                 var msgs = bulletManagers[id].update(players, null, id);

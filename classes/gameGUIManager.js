@@ -13,6 +13,8 @@ var players_string  = [];
 var cdText;
 var health_value;
 var HPIcons = [];
+var cooldownBar;
+var skillReady;
 var stage_copy;
 var died = 1;
 
@@ -24,11 +26,22 @@ function initGameGUI(stage){
     addPlayerGUI(stage);
     displayText(stage);
     stage_copy = stage;
-    cdText = new PIXI.BitmapText("", {font: "28px 04b03", align: "right"});
-    cdText.position.x = 700;
-    cdText.position.y = 40;
-    stage.addChild(cdText);
+    //cdText = new PIXI.BitmapText("", {font: "28px 04b03", align: "right"});
+    //cdText.position.x = 700;
+    //cdText.position.y = 40;
+    //stage.addChild(cdText);
 
+    var bartexture = PIXI.Texture.fromImage("cooldownBar.png");
+    cooldownBar = new PIXI.Sprite(bartexture);
+    cooldownBar.position.x = 700;
+    cooldownBar.position.y = 40;
+    stage.addChild(cooldownBar);
+
+    var readytexture = PIXI.Texture.fromImage("skillReady.png");
+    skillReady = new PIXI.Sprite(readytexture);
+    skillReady.position.x = 630;
+    skillReady.position.y = 30;
+    stage.addChild(skillReady);
 }
 
 var waitText;
@@ -168,10 +181,8 @@ function displayText(stage)
     var coolDown = new PIXI.BitmapText("", {font: "28px 04b03", align: "left"});
     coolDown.position.x = 700;
     coolDown.position.y = 10;
-    coolDown.setText("SP");
+    coolDown.setText("Skill");
     stage.addChild(coolDown);
-
-
 }
 
 var nextGUIY = 40;
@@ -311,7 +322,13 @@ function gameGUIUpdate(){
 
     }
     if(ownSkillManager!=null){
-        cdText.setText("cd: "+ownSkillManager.scd.toString());
+        cooldown = ownSkillManager.scd;
+        cooldownBar.width = cooldown*2;
+        if(cooldown <= 0){
+            skillReady.visible = true;
+        } else{
+            skillReady.visible = false;
+        }
     }
 
 
@@ -325,7 +342,7 @@ function gameGUIUpdate(){
         health_value = characters[playerID].HP;
         var health2;
         health2 = (health_value/100)*200;
-        HPIcons[i].width = health2;
+        HPIcons[i].width = HPIcons[i].width - (HPIcons[i].width - health2)/5;
         HP_value[0] = characters[playerID].HP;
         //display live text
         LivesTexts[i].setText(characters[playerID].lives.toString());

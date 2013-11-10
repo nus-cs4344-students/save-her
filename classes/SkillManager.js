@@ -252,7 +252,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
 
                         if (isGoingToUseSkill) {
                             that.skill();
-                            that.cd = 60;
+                            that.cd = 30;
                         }
                     }
                 }

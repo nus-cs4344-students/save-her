@@ -328,6 +328,8 @@
             <filename>start-button.png</filename>
             <filename>fight.png</filename>
             <filename>scoreboard.png</filename>
+            <filename>skillReady.png</filename>
+            <filename>cooldownBar.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

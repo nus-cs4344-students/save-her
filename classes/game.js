@@ -31,7 +31,7 @@ function Game(pl, s, m, p, i) {
     isHost = i;
     var pointerTexture;
     // initialise sounds and music
-    //initSounds();
+    initSounds();
 
     // load all art assets
     var assetsToLoader = ["PIXI/SpriteSheet2.json", "PIXI/PixelFont.fnt"];
@@ -107,7 +107,7 @@ function Game(pl, s, m, p, i) {
                 for (var i = 0; i < 2; i++) {
                     var graveTexture = PIXI.Texture.fromImage("grave.png");
                     var grave = new PIXI.Sprite(graveTexture);
-                    grave.position.x = i * graveTexture.width * 2;
+                    grave.position.x = i * graveTexture.width * 2 - 100 - i;
                     grave.position.y = 150;
                     grave.width = grave.width * 2;
                     grave.height = grave.height * 2;
@@ -127,18 +127,18 @@ function Game(pl, s, m, p, i) {
 
                 var gradientTexture = PIXI.Texture.fromImage("pixelGradient.png");
                 var gradient = new PIXI.Sprite(gradientTexture);
-                gradient.position.x = -50;
-                gradient.position.y = 0;
-                gradient.width = gradient.width * 2;
-                gradient.height = gradient.height * 2;
+                gradient.position.x = -100;
+                gradient.position.y = -100;
+                gradient.width = gradient.width * 2.5;
+                gradient.height = gradient.height * 2.5;
                 cameraBack.addChild(gradient);
 
                 var pixelbackTexture = PIXI.Texture.fromImage("pixelbackdrop.png");
                 var pixelback = new PIXI.Sprite(pixelbackTexture);
-                pixelback.position.x = 0;
-                pixelback.position.y = 0;
-                pixelback.width = pixelback.width * 2;
-                pixelback.height = pixelback.height * 2;
+                pixelback.position.x = -100;
+                pixelback.position.y = -100;
+                pixelback.width = pixelback.width * 2.5;
+                pixelback.height = pixelback.height * 2.5;
                 pixelback.alpha = 0.6;
                 cameraBack.addChild(pixelback);
 
@@ -157,16 +157,16 @@ function Game(pl, s, m, p, i) {
                 var helloback = new PIXI.Sprite(hellobackTexture);
                 helloback.position.x = -50;
                 helloback.position.y = 0;
-                helloback.width = helloback.width * 2;
-                helloback.height = helloback.height * 2;
+                helloback.width = helloback.width * 2.1;
+                helloback.height = helloback.height * 2.1;
                 cameraBack.addChild(helloback);
 
                 var seaTexture = PIXI.Texture.fromImage("sea.png");
                 var sea = new PIXI.Sprite(seaTexture);
                 sea.position.x = -50;
                 sea.position.y = 500;
-                sea.width = sea.width * 2;
-                sea.height = sea.height * 2;
+                sea.width = sea.width * 2.2;
+                sea.height = sea.height * 2.1;
                 cameraBack.addChild(sea);
 
                 tileTexture = PIXI.Texture.fromImage("helloTile.png");
@@ -329,8 +329,8 @@ function Game(pl, s, m, p, i) {
                     var pointerT = new PIXI.Sprite(pointerTexture);
                     pointerT.position.x = 1000;
                     pointerT.position.y = 1000;
-                    pointerT.width = 50;
-                    pointerT.height = 50;
+                    pointerT.width = 15;
+                    pointerT.height = 51;
                     pointer[message.playerID] = pointerT;
                     stage.addChild(pointer[message.playerID]);
                     addPlayerGUI(stage);
@@ -353,7 +353,8 @@ function Game(pl, s, m, p, i) {
                     characters[message.playerID].jump();
                     break;
 
-                    // landed from a fall
+                    // force pos at start / landed from a fall
+                case "forcePlayerPos":
                 case "land":
                     characters[message.playerID].startInterpolateX(message.PosX);
                     characters[message.playerID].startInterpolateY(message.PosY);
@@ -370,6 +371,7 @@ function Game(pl, s, m, p, i) {
                     if (!characters[message.playerID].isObsolete(message.Seq)) {
                         characters[message.playerID].setSpeedX(message.SpeedX);
                         characters[message.playerID].startInterpolateX(message.PosX);
+                        characters[message.playerID].setFaceRight(message.FaceR);
                     }
                     break;
 

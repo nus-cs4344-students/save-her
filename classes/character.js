@@ -48,6 +48,7 @@ function Character(){
 	var interpolateValidityY = 0;
 	var interpolateAmtY = 0;
 	var minHeight = 99999;
+	var latestFaceRight = false;	// which direction player was facing
 
 	var inAir = false;
 	var isDead = false;
@@ -69,7 +70,6 @@ function Character(){
 			hurtTextures = hurtTexturesArg;
 
 			spriteMovieClip = new PIXI.MovieClip(stopTextures);
-                        console.log(spriteMovieClip);
 			spriteMovieClip.scale.x = spriteMovieClip.scale.y = 2;
 			spriteMovieClip.position.x = posX;
 			if(typeArg == CHARACTERTYPE.DEVIL)
@@ -135,10 +135,11 @@ function Character(){
 		                if(map[i][j] == 1)
 		                	platformTopPos.push([i,j]);
 
-
-
 		        var randPos = platformTopPos[Math.floor((Math.random()*platformTopPos.length))];
 		        that.setPosition(64*randPos[1] + 32, 64*randPos[0] - 64*2);
+
+		        sendToServer({type:"forcePlayerPos", PosY: posY, PosX: posX});
+
 			} else {
 				// spawn at some invisible location, and wait for
 				// opponent to appear
@@ -150,18 +151,18 @@ function Character(){
 		var updateServer = horizontalMovementUpdate();
 		verticalMovementUpdate();
 
+		if(!isMine) interpolateUpdate();
+
+		move(speedX, speedY);
+
 		if(updateServer){
 			// send input change to server
 			if(!ISSERVER && isMine){
 				speedXSeqNo++;
-				sendToServer({type:"speedX", SpeedX: remoteSpeedX, PosX: posX, Seq: speedXSeqNo});
+				sendToServer({type:"speedX", SpeedX: remoteSpeedX, PosX: posX, FaceR: faceRight, Seq: speedXSeqNo});
 				//console.log({type:"speedX", SpeedX: remoteSpeedX, PosX: posX, Seq: speedXSeqNo});
 			}
 		}
-
-		if(!isMine) interpolateUpdate();
-
-		move(speedX, speedY);
 
 		// debug
 		if(!ISSERVER && isMine){
@@ -413,11 +414,11 @@ function Character(){
 			// update XSpeed (note that there is no acceleration for remote side)
 			if(holdingKey['right']){
 				remoteSpeedX = CHARACTERMOVEMENTSPEED;
-				speedX = Math.min(speedX + 2*deltaTime, CHARACTERMOVEMENTSPEED);
+				speedX = Math.min(speedX + 1.5*deltaTime, CHARACTERMOVEMENTSPEED);
 			}
 			else if(holdingKey['left']){
 				remoteSpeedX = -CHARACTERMOVEMENTSPEED;
-				speedX = Math.max(speedX - 2*deltaTime , -CHARACTERMOVEMENTSPEED);
+				speedX = Math.max(speedX - 1.5*deltaTime , -CHARACTERMOVEMENTSPEED);
 			}
 			else{
 				remoteSpeedX = 0;
@@ -582,6 +583,12 @@ function Character(){
 			//console.log("InterpolatedX");
 			interpolateAmtX = deltaX / NUMFRAMESTOINTERPOLATE;
 			interpolateValidityX = NUMFRAMESTOINTERPOLATE;
+		} else{
+			faceRight = latestFaceRight;
+			if(!ISSERVER){
+				if(faceRight) spriteMovieClip.scale.x = 2;
+				else spriteMovieClip.scale.x = -2;
+			}
 		}
 	}
 
@@ -607,8 +614,14 @@ function Character(){
 		if(interpolateValidityX > 0){
 			interpolateValidityX--;
 			moveBlindlyX(interpolateAmtX);
-			if(interpolateValidityX == 0)
+			if(interpolateValidityX == 0){
 				interpolateAmtX = 0;
+				faceRight = latestFaceRight;
+				if(!ISSERVER){
+					if(faceRight) spriteMovieClip.scale.x = 2;
+					else spriteMovieClip.scale.x = -2;
+				}
+			}
 		}
 
 		// vertical component
@@ -619,6 +632,10 @@ function Character(){
 			if(interpolateValidityY == 0)
 				interpolateAmtY = 0;
 		}
+	}
+
+	this.setFaceRight = function(faceRightArg){
+		latestFaceRight = faceRightArg;
 	}
 
     this.isDeadNow = function(){
