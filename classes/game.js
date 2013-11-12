@@ -415,7 +415,7 @@ function Game(pl, s, m, p, i) {
                     break;
 
                 case "skill":
-                    console.log(message);
+                    //console.log(message);
                     if (characters[message.playerID].characterType == CHARACTERTYPE.PUMPKIN)
                     {
                         skillManagers[message.playerID].skillMineRemote(message.x, message.y);
@@ -430,11 +430,11 @@ function Game(pl, s, m, p, i) {
                     //Push the list of killers
                     killList.push(message.p1);
                     //p1 killed p2.(ID)
-                    console.log("opp: " + opponmentID[0]);
-                    console.log("killist1: " + killList[0]);
-                    console.log("killist2: " + killList[1]);
-                    console.log("killer = " + message.p1);
-                    console.log(message.p1 + " killed  " + message.p2);
+                    //console.log("opp: " + opponmentID[0]);
+                    //console.log("killist1: " + killList[0]);
+                    //console.log("killist2: " + killList[1]);
+                    //console.log("killer = " + message.p1);
+                    //console.log(message.p1 + " killed  " + message.p2);
                     break;
                 case "stun":
                     if (typeof(characters[message.p2]) != "undefined")
@@ -451,7 +451,7 @@ function Game(pl, s, m, p, i) {
                     }
                     break;
                 case "interestUpdate":
-                    console.log(message);
+                    //console.log(message);
                     characters[message.playerID].setPosition(message.x, message.y);
                     break;
             }
@@ -484,7 +484,7 @@ function Game(pl, s, m, p, i) {
                 }
                 else
                 {
-                    x = 750;
+                    x = 780;
                     //console.log(x1+" "+y1+" "+x2+" "+y2)
                 }
                 y = (y2 - y1) * 400 / xt+300;

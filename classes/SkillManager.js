@@ -119,7 +119,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                                         msgs.push(killMsg);
                                     }
                                     var msg = {type: "hurt", p1: id, p2: j, dmg: aoeDamage, hpLeft: players[j].HP};
-                                    console.log(msg);
+                                    //console.log(msg);
                                     msgs.push(msg);
                                     lastAoeHurtTime[j] = now;
                                 }

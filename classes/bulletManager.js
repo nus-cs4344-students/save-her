@@ -62,7 +62,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                             //alert(bullets[i].getTtl());
                             bullets.splice(i, 1);
                             i--;
-                            console.log("hit!");
+                            //console.log("hit!");
                         }
                     }
 
@@ -88,7 +88,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                             //alert(bullets[i].getTtl());
                             bullets.splice(i, 1);
                             i--;
-                            console.log("hit!");
+                            //console.log("hit!");
                         }
                     }
 
@@ -105,7 +105,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                         //alert(bullets[i].getTtl());
                         bullets.splice(i, 1);
                         i--;
-                        console.log("hit!");
+                        //console.log("hit!");
                     }
                 }
         }

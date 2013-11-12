@@ -79,10 +79,10 @@ var updateInterest = function() {
                 var y2 = players[j].getPosY();
                 if (Math.abs(x1 - x2) < 1600 && Math.abs(y1 - y2) < 1200)
                 {
-                    console.log(interestList[i][j]);
+                    //console.log(interestList[i][j]);
                     if (interestList[i][j] == false||interestList[i][j] === "undefined")
                     {
-                        console.log("send "+i);
+                        //console.log("send "+i);
                         unicast(sockets[i], {type: "interestUpdate", playerID: j, x: x2, y: y2});
                         unicast(sockets[j], {type: "interestUpdate", playerID: i, x: x1, y: y1});
                     }
