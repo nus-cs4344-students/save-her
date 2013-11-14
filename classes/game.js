@@ -30,8 +30,6 @@ function Game(pl, s, m, p, i) {
     port = p;
     isHost = i;
     var pointerTexture;
-    // initialise sounds and music
-    initSounds();
 
     // load all art assets
     var assetsToLoader = ["PIXI/SpriteSheet2.json", "PIXI/PixelFont.fnt"];
@@ -92,7 +90,7 @@ function Game(pl, s, m, p, i) {
 
             // graveyard level
             case 0:
-                playSound(gameMusic0, true);
+                Gamesound.playloop("W1");
 
                 map = map0;
 
@@ -121,7 +119,7 @@ function Game(pl, s, m, p, i) {
 
                 // pixel level
             case 1:
-                playSound(gameMusic1, true);
+                Gamesound.playloop("W2");
 
                 map = map1;
 
@@ -149,7 +147,7 @@ function Game(pl, s, m, p, i) {
 
                 // happy level
             case 2:
-                playSound(gameMusic2, true);
+                Gamesound.playloop("W3");
 
                 map = map2;
 

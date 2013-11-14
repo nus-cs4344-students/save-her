@@ -75,6 +75,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                                         msgs.push(killMsg);
                                     }
                                     var msg = {type: "mineHurt", p1: id, p2: j, dmg: mineDamage, mineId: i, hpLeft: players[j].HP};
+                                   
                                     msgs.push(msg);
                                     mines.splice(i, 1);
                                     minesX.splice(i, 1);
@@ -272,8 +273,10 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
         switch (player.characterType) {
             case CHARACTERTYPE.HUMAN:
                 //rapid shoot
+
                 if (!isServer)
                 {
+                    Gamesound.play("special2");
                     //Super saiyan effect
                     var superSaiyanFX = [];
                     for (var i = 0; i < 3; i++)
@@ -293,8 +296,10 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 break;
             case CHARACTERTYPE.PUMPKIN:
                 //landmine, only myself can see
+                
                 mineLeft--;
                 if (!isServer) {
+                    Gamesound.play("special1");
                     var mineTextures = [];
                     for (var i = 0; i < 8; i++)
                         mineTextures.push(PIXI.Texture.fromFrame("bomb000" + (i) + ".png"));
@@ -316,6 +321,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 //AOE
                 if (!isServer)
                 {
+                    Gamesound.play("special4");
                     //AOE texture
                     var aoeTextures = [];
                     for (var i = 0; i < 6; i++)
@@ -359,6 +365,7 @@ function SkillManager(stageArg, playerArg, bulletManager, isMine, isS) {
                 //stun
                 if (!isServer)
                 {
+                    Gamesound.play("special3");
                     var stunTextures = [];
                     stunTextures.push(PIXI.Texture.fromFrame("STUNwhite.png"));
                     stunTextures.push(PIXI.Texture.fromFrame("STUN.png"));

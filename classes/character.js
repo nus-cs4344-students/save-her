@@ -497,7 +497,7 @@ function Character(){
 
 		// send jump command to server
 		if(!ISSERVER && isMine){
-			playSound(jumpSound, false);
+			Gamesound.play("jump");
 			sendToServer({type:"jump"});
 			//console.log({type:"jump"});
 		}

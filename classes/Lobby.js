@@ -169,7 +169,7 @@ function Lobby(){
 		begin.setBounds(10,10, 680, 380);
 		root.add(begin);
 		begin.add(zebra.layout.CENTER,new zebra.ui.Label("Click Game Area to begin!"));
-
+		Gamesound.init();
 	}	
 	
 	

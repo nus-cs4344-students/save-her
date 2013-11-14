@@ -1,42 +1,39 @@
-var context;
+var Gamesound = new function()
+{
 
-// music
-var gameMusic0 = "Sounds/World2.mp3";
-var gameMusic1 = "Sounds/World3.mp3";
-var gameMusic2 = "Sounds/World1.mp3";
+	this.init = function(){
+	if (!createjs.Sound.initializeDefaultPlugins()) {return;}
 
-// sound
-var jumpSound = "Sounds/JumpSound.wav";
+			var audioPath = "Sounds/";
+			var manifest = [
+				{id:"W1", src:audioPath+"World2.mp3"},
+				{id:"W2", src:audioPath+"World3.mp3"},
+				{id:"W3", src:audioPath+"World1.mp3"},
+				{id:"jump", src:audioPath+"JumpSound.wav"},
+				{id:"bulletSound", src:audioPath+"bullet1.wav"},
+				{id:"bulletHit", src:audioPath+"bulletHit.wav"},
+				{id:"special1", src:audioPath+"pompkin.wav"},//pompkin
+				{id:"special2", src:audioPath+"human.wav"},//human
+				{id:"special3", src:audioPath+"devil.wav"},//devil
+				{id:"special4", src:audioPath+"shroom.wav"}
 
-// bullet sound
-
-var bulletSound = "Sounds/bullet1.wav";
-
-// bullet hit
-var bulletHit = "Sounds/bulletHit.wav";
-
-// Specials
-
-
-
-// initialise before making any play sounds call
-function initSounds(){
-	window.AudioContext = window.AudioContext || window.webkitAudioContext;
-    context = new AudioContext();
-}
-
-// play sound
-// not sure if this is slow
-function playSound(filename, loop){
-    bufferLoader = new BufferLoader(
-    	context, [filename],
-    	function(buffer){
-			var source = context.createBufferSource();
-			source.loop = loop;
-			source.buffer = buffer[0];
-			source.connect(context.destination);
-			source.start(0);
+			];
+			
+			createjs.Sound.addEventListener("fileload", handleLoad);
+			createjs.Sound.registerManifest(manifest);
 		}
-	);
-  	bufferLoader.load();
+
+		function handleLoad(event) {
+			console.log("Sound loaded");
+		}
+		this.play = function(id)
+		{
+			console.log(id);
+			createjs.Sound.play(id);
+		}
+		this.playloop = function(id)
+		{
+			console.log(id);
+			createjs.Sound.play(id,{interrupt: createjs.Sound.INTERRUPT_ANY, loop:-1});
+		}
 }

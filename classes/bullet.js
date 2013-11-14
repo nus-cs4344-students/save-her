@@ -10,6 +10,7 @@ function bullet(stageArg, init_x, init_y, speed, path, isS, dmg) {
     var onStage = false;
     if (!isServer)
     {
+        Gamesound.play("bulletSound");
         var texture = PIXI.Texture.fromImage(path);
         var b = new PIXI.Sprite(texture);
         b.scale.x = 2;

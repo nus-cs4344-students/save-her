@@ -83,7 +83,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                         if (players[j].isColliding(bullets[i].getRect()))
                         {
                             //play sound if bullet hit
-                            playSound(bulletHit, false);
+                            Gamesound.play("bulletHit");
                             bullets[i].destroy();
                             //alert(bullets[i].getTtl());
                             bullets.splice(i, 1);
@@ -100,7 +100,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                     if (own.isColliding(bullets[i].getRect()))
                     {
                         //play sound if bullet hit
-                        playSound(bulletHit, false);
+                        Gamesound.play("bulletHit");
                         bullets[i].destroy();
                         //alert(bullets[i].getTtl());
                         bullets.splice(i, 1);
@@ -159,7 +159,7 @@ function BulletManager(stageArg, playerArg, isMine, isS) {
                     dir = 1;
 
                 that.shoot();
-                playSound(bulletSound, false);
+                
             }
         }
     }
