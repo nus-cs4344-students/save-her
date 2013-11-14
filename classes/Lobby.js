@@ -169,7 +169,7 @@ function Lobby(){
 		begin.setBounds(10,10, 680, 380);
 		root.add(begin);
 		begin.add(zebra.layout.CENTER,new zebra.ui.Label("Click Game Area to begin!"));
-		Gamesound.init();
+
 	}	
 	
 	
@@ -803,9 +803,11 @@ function Lobby(){
 	this.start = function() {
 		//setup connection
 		initNetwork();
-		
+		//setup sound
+		Gamesound.init();
 		zebra.ready(function(){
 			// build Zebra stage 
+
 			stage = new zebra.ui.zCanvas(700,400);
 			root    = stage.root;
 			//root.setBackground("black");
