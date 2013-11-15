@@ -1,9 +1,13 @@
 var Gamesound = new function()
 {
 
+
+
+
 	this.init = function(){
 	if (!createjs.Sound.initializeDefaultPlugins()) {return;}
-
+	createjs.WebAudioPlugin.BASE_PATH = "classes/";
+	 createjs.Sound.registerPlugin(createjs.WebAudioPlugin);
 			var audioPath = "Sounds/";
 			var manifest = [
 				{id:"W1", src:audioPath+"World2.mp3"},

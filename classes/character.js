@@ -88,6 +88,7 @@ function Character(){
 
 	        playArea.addEventListener("touchstart", function(e) {
 	            var mouseX = e.changedTouches[0].pageX - playArea.offsetLeft;
+	            createjs.WebAudioPlugin.playEmptySound();
 
 	            if(mouseX <= 400)   // left half of canvas
 	                that.touchJump = true;
