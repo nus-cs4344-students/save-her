@@ -676,7 +676,8 @@ function Lobby(){
     /*
      * private method: connectGame()
      *
-     * TODO
+     * server confirms creation of new game
+	 * then client can connect to the game
 	 *
      */
 	
@@ -690,7 +691,7 @@ function Lobby(){
     /*
      * private method: newGame()
      *
-     * TODO
+     * send a message to server to start new game
 	 *
      */
 	

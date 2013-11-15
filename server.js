@@ -119,7 +119,19 @@ function Server(port) {
             }
 
             sockets[socket.id] = socket;
-
+				
+			socket.on('close', function () {
+				//when player disconnects, remove him from his current game session			
+				//cheat: just make him die
+				players[socket.id].HP = 0;
+				players[socket.id].lives = 0;
+				//tell the other players this player is gone
+				var leave={type:"playerLeave",playerID:socket.id};
+                broadcastRestWithPlayerID(socket, leave);
+					
+			});
+			
+			
             // on receiving something from client
             socket.on("data", function(e) {
 

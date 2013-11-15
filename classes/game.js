@@ -290,7 +290,7 @@ function Game(pl, s, m, p, i) {
         camera.position.y = ownCharacter.getSprite().position.y + 100;
 
         // networking		
-        var url = "http://localhost:" + port + "/game"
+        var url = "http://localhost:" + port + "/game";
         socket = new SockJS(url);	// set as global variable in constants.js
 
         socket.onopen = function() {
@@ -333,7 +333,11 @@ function Game(pl, s, m, p, i) {
                     stage.addChild(pointer[message.playerID]);
                     addPlayerGUI(stage);
                     break;
-
+				case "playerLeave":
+					//cheat: just kill the player
+					characters[socket.id].HP = -1;
+					characters[socket.id].lives = -1;
+					break;
                     // the host of the game starts it
                 case "hostStartGame":
                     for (var id in characters) {
