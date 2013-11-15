@@ -25,6 +25,7 @@ function initFX(stageArg){
 }
 
 function createFiringFX(x, y, faceLeft){
+    Gamesound.play("bulletSound");
     var sprite = new PIXI.Sprite(firingFX);
     sprite.scale.x = 2;
     sprite.scale.y = 2;
@@ -63,6 +64,7 @@ function createBulletExplodeFX(x, y){
 };
 
 function createHurtFX(x, y){
+    Gamesound.play("bulletHit");
     var sprite = new PIXI.Sprite(hurtFX);
     sprite.anchor.x = 0.5;
     sprite.anchor.y = 0.5;
@@ -88,6 +90,7 @@ function createHurtFX(x, y){
 };
 
 function createExplosionFX(x, y){
+    Gamesound.play("explode");
     var sprite = new PIXI.MovieClip(explosionFX);
     sprite.anchor.x = 0.5;
     sprite.anchor.y = 0.5;

@@ -15,7 +15,8 @@ var Gamesound = new function()
 				{id:"special1", src:audioPath+"pompkin.wav"},//pompkin
 				{id:"special2", src:audioPath+"human.wav"},//human
 				{id:"special3", src:audioPath+"devil.wav"},//devil
-				{id:"special4", src:audioPath+"shroom.wav"}
+				{id:"special4", src:audioPath+"shroom.wav"},
+				{id:"explode", src:audioPath+"explode.wav"}
 
 			];
 			
